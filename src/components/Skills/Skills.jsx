@@ -20,8 +20,8 @@ const Skills = () => {
 
     return (
         <section className='p-4 flex flex-col gap-2'>
-            <h2 className='text-6xl text-amber-600 font-lexend font-bold tracking-tighter'>SKILLS</h2>
-            <p className='text-right text-amber-800/50 font-medium '>Things I Pretend to Be a Wizard At</p>
+            <h2 className='font-lexend text-6xl font-semibold tracking-tighter text-amber-950'>Ctrl + Alt + Skills</h2>
+            <p className='tracking-tighter -mt-1 font-lexend text-right font-medium text-sm text-amber-700/50'>Endorsed by Mom and Linkedin</p>
             <main className='mt-4 grid grid-cols-2 gap-6 md:grid-cols-3 lg:grid-cols-4'>
 
                 {skills.map((skill, index) => {

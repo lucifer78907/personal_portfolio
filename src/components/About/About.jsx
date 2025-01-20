@@ -1,5 +1,4 @@
 import React from 'react';
-import { FaBug } from 'react-icons/fa';
 
 const About = () => {
     return (
