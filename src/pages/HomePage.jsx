@@ -6,8 +6,8 @@ const HomePage = () => {
     return (
         <>
             <Hero />
-            {/* <Skills /> */}
             <About />
+            {/* <Skills /> */}
         </>
     );
 };
