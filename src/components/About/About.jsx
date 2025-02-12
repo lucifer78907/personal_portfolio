@@ -9,9 +9,6 @@ const About = () => {
                 <p>Started coding in 2020 and haven&apos;t stopped since—basically living the <span className='bg-amber-700 p-1 text-amber-50 inline-block'>'just one more deploy'</span> life. I&apos;ve built sleek web apps, APIs, boosted SEO so well it might as well be on steroids.
                 </p>
                 <p>
-                    From crushing hackathons to mentoring AI projects. I&apos;ve had my fair share of 'this is fine' coding moments and late-night bug battles.
-                </p>
-                <p>
                     These days, I&apos;m all about building cool stuff, helping others grow, and making the web a better place , think of me as the <span className='bg-amber-700 p-1 text-amber-50'>
                         Tony Stark</span> of web devs: always tinkering, sometimes snarky, but always delivering."
                 </p>
