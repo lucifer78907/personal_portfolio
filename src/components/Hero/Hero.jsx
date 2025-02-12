@@ -22,7 +22,7 @@ const Hero = () => {
     ]
 
     return (
-        <section className='p-4 flex flex-col '>
+        <section className='p-4 flex flex-col mb-12'>
             <h1 className='font-lexend text-5xl tracking-tighter leading-tight font-semibold text-yellow-950'>Hi there! <br /> I'm Rudra.</h1>
             <Poloroids />
             <p className='font-lexend text-2xl -mt-4  font-medium tracking-wide leading-snug'>

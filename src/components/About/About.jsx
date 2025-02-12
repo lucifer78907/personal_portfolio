@@ -2,7 +2,7 @@ import React from 'react';
 
 const About = () => {
     return (
-        <section className='p-4 flex flex-col gap-2'>
+        <section className='p-4 flex flex-col gap-2 mb-6'>
             <h2 className='font-lexend text-6xl font-semibold tracking-tighter text-amber-950'>Ctrl + Me</h2>
             <p className='tracking-tighter -mt-1 font-lexend text-right font-medium text-sm text-amber-700/50'>The guy behind the keyboard</p>
             <main className='mt-2 text-lg font-medium text-amber-900 flex flex-col gap-4 leading-relaxed'>

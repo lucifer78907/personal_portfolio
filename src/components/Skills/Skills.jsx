@@ -43,13 +43,13 @@ const Skills = () => {
                     </main>
                 ) :
                 (
-                    <main className='mt-4'>
-                        <h3 className='font-lexend text-xl p-2 text-amber-950'>db.skills.find{'({'}
+                    <main className='mt-4 '>
+                        <h3 className='font-lexend text-xl p-2 text-amber-950'><span className='font-medium text-amber-700'>db</span>.skills.<span className='font-semibold text-amber-600'>find</span>{'({'}
                             <p className='ml-4'>{"{ id: '476967642049534f' }"}</p>
                             <p className='ml-4'>{"{ name: 'Rudra' }"}</p>
                             <p>{'});'}</p>
                         </h3>
-                        <button onClick={() => setClicked(true)} className='flex items-center gap-2 mt-4 text-xl bg-amber-800 font-medium text-neutral-50 px-4 py-2 rounded-md '>Run query <BiSolidRightArrow size={'1.2em'} /></button>
+                        <button onClick={() => setClicked(true)} className='flex items-center gap-2 mt-4 text-lg bg-amber-800 mx-auto font-medium text-neutral-50 px-4 py-2 rounded-md '>Run query <BiSolidRightArrow size={'1.2em'} /></button>
                     </main>
                 )
 
