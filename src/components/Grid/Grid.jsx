@@ -1,8 +1,8 @@
 import React from 'react'
-import catImg from '../../assets/cat.svg'
-import codeImg from '../../assets/code.svg'
-import coffeeImg from '../../assets/coffee.svg'
-import workImg from '../../assets/work.svg'
+import { FaCat, FaCode, FaFigma, FaNodeJs, FaReact } from "react-icons/fa6";
+import { FaCoffee } from 'react-icons/fa';
+
+
 
 
 
@@ -12,23 +12,53 @@ function Grid() {
             <h2 className='font-lexend text-lg flex items-center gap-1 font-semibold tracking-tighter text-amber-950'><span className='text-xl font-medium text-amber-600'>$</span>sudo find /root/moreAboutMe</h2>
             <p className='tracking-tighter -mt-1 font-lexend text-right font-medium text-sm text-amber-700/50'>There's always more to tell</p>
             <main className='grid grid-cols-1 gap-8 my-6'>
-                <article className='bg-amber-100/30 backdrop-blur-lg shadow-lg p-2 pt-0 rounded-xl border-2 border-amber-600'>
-                    <h2 className='w-max p-2  rounded-b-xl justify-center mb-4 bg-amber-800 text-neutral-50 font-medium tracking-wide'>Three Musketeers of Rudra</h2>
-                    <main className='flex items-center gap-2'>
+
+                <article className='bg-gradient-to-br from-amber-800 to-amber-400 via-amber-700   shadow-lg p-4  rounded-xl relative '>
+                    <h2 className='mb-4  text-4xl tracking-tighter -top-8 -z-10 right-2 font-semibold text-amber-200'>I <span className='uppercase'>Work</span> on</h2>
+                    <ul className='flex items-start justify-between  gap-2'>
+                        <div className='flex flex-col items-center gap-2'>
+                            <FaFigma size={'4em'} className='fill-amber-100' />
+                            <h3 className='text-center text-amber-100 font-medium'>UI</h3>
+                        </div>
+                        <div className='flex flex-col items-center gap-2'>
+                            <FaReact size={'4em'} className='fill-amber-100' />
+                            <h3 className='text-center text-amber-100 font-medium'>Frontend</h3>
+                        </div>
+                        <div className='flex flex-col items-center gap-2'>
+                            <FaNodeJs size={'4em'} className='fill-amber-100' />
+                            <h3 className='text-center text-amber-100 font-medium'>Backend</h3>
+                        </div>
+
+                    </ul>
+                </article>
+
+                <article className='bg-gradient-to-br from-amber-50 to-amber-500 via-amber-100   shadow-lg p-4  rounded-xl relative'>
+                    <h2 className='text-4xl mb-4 tracking-tighter font-semibold text-amber-600'>My <span className='uppercase'>Life</span> cycle</h2>
+                    <main className='flex items-center justify-between gap-2'>
                         <div>
-                            <img src={catImg} alt='A cat' />
-                            <h3 className='text-center text-amber-600 font-medium'>Cat</h3>
+                            <FaCat size={'4em'} className='fill-amber-800' />
+                            <h3 className='text-center text-amber-800 font-medium '>Cat</h3>
                         </div>
                         <div>
-                            <img src={codeImg} alt='Person' />
-                            <h3 className='text-center text-amber-600 font-medium'>Code</h3>
-                        </div><div>
-                            <img src={coffeeImg} alt='A cat' />
-                            <h3 className='text-center text-amber-600 font-medium'>Coffee</h3>
+                            <FaCode size={'4em'} className='fill-amber-800' />
+                            <h3 className='text-center text-amber-800 font-medium '>Code</h3>
+                        </div>
+                        <div>
+                            <FaCoffee size={'4em'} className='fill-amber-800' />
+                            <h3 className='text-center text-amber-800 font-medium '>Coffee</h3>
+
                         </div>
                     </main>
                 </article>
-                <article className='bg-amber-100/30 backdrop-blur-md shadow-lg p-2 pt-0 rounded-xl border-2 border-amber-600'>
+
+            </main>
+        </section >
+    )
+}
+
+export default Grid
+
+{/* <article className='bg-amber-100/30 backdrop-blur-md shadow-lg p-2 pt-0 rounded-xl border-2 border-amber-600'>
                     <h2 className='w-max p-2  rounded-b-xl justify-center mb-4 bg-amber-800 text-neutral-50 font-medium tracking-wide'>What i <span className='font-semibold tracking-tighter mx-1'>LOVE</span> to do</h2>
                     <main className='flex items-start justify-between'>
 
@@ -120,17 +150,4 @@ function Grid() {
                         </div>
 
                     </main>
-                </article>
-                <article className='bg-amber-100/30 backdrop-blur-md shadow-lg p-2 pt-0 rounded-xl border-2 border-amber-600'>
-                    <h2 className='w-max p-2  rounded-b-xl justify-center mb-4 bg-amber-800 text-neutral-50 font-medium tracking-wide'>Fun <span className='font-semibold tracking-tighter mx-1'>FACTS</span> about me</h2>
-
-
-                </article>
-
-
-            </main>
-        </section >
-    )
-}
-
-export default Grid
+                </article> */}
