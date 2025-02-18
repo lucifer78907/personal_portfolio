@@ -1,5 +1,5 @@
 import React from 'react'
-import { FaCat, FaCode, FaFigma, FaNodeJs, FaReact } from "react-icons/fa6";
+import { FaCat, FaCode, FaFigma, FaNodeJs, FaReact, FaStar } from "react-icons/fa6";
 import { FaCoffee } from 'react-icons/fa';
 
 
@@ -14,7 +14,7 @@ function Grid() {
             <main className='grid grid-cols-1 gap-8 my-6'>
 
                 <article className='bg-gradient-to-br from-amber-800 to-amber-400 via-amber-700   shadow-lg p-4  rounded-xl relative '>
-                    <h2 className='mb-4  text-4xl tracking-tighter -top-8 -z-10 right-2 font-semibold text-amber-200'>I <span className='uppercase'>Work</span> on</h2>
+                    <h2 className='mb-4  text-4xl tracking-tighter -top-8 -z-10 right-2 font-semibold text-amber-200'>I <span className='uppercase font-extrabold'>Work</span> on</h2>
                     <ul className='flex items-start justify-between  gap-2'>
                         <div className='flex flex-col items-center gap-2'>
                             <FaFigma size={'4em'} className='fill-amber-100' />
@@ -33,7 +33,7 @@ function Grid() {
                 </article>
 
                 <article className='bg-gradient-to-br from-amber-50 to-amber-500 via-amber-100   shadow-lg p-4  rounded-xl relative'>
-                    <h2 className='text-4xl mb-4 tracking-tighter font-semibold text-amber-600'>My <span className='uppercase'>Life</span> cycle</h2>
+                    <h2 className='text-4xl mb-4 tracking-tighter font-semibold text-amber-600'>I <span className='uppercase font-extrabold'>Love</span> my</h2>
                     <main className='flex items-center justify-between gap-2'>
                         <div>
                             <FaCat size={'4em'} className='fill-amber-800' />
@@ -48,6 +48,29 @@ function Grid() {
                             <h3 className='text-center text-amber-800 font-medium '>Coffee</h3>
 
                         </div>
+                    </main>
+                </article>
+
+                <article className='bg-gradient-to-br from-amber-800 to-amber-400 via-amber-700   shadow-lg p-4  rounded-xl relative'>
+                    <h2 className='text-4xl mb-4 tracking-tighter font-semibold text-amber-200'>I <span className='uppercase font-extrabold'>have</span> done</h2>
+                    <main className='flex flex-col items-start  gap-3 text-amber-100 font-medium'>
+                        <div className='flex items-center gap-2'>
+                            <FaStar />
+                            <p className='text-xs'>Bachlor of Engineering from Chandigarh/India </p>
+                        </div>
+                        <div className='flex items-center gap-2'>
+                            <FaStar />
+                            <p className='text-xs'>Hackathons and late night bug battles</p>
+                        </div>
+                        <div className='flex items-center gap-2'>
+                            <FaStar />
+                            <p className='text-xs'>Some AI based projects in school</p>
+                        </div>
+                        <div className='flex items-center gap-2 mb-2'>
+                            <FaStar />
+                            <p className='text-xs'>Tutored friends React/Nodejs and many more..</p>
+                        </div>
+
                     </main>
                 </article>
 
