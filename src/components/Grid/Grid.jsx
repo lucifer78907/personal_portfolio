@@ -8,7 +8,7 @@ import { FaCoffee } from 'react-icons/fa';
 
 function Grid() {
     return (
-        <section className='p-4 pt-0 flex flex-col gap-2 mb-12'>
+        <section className='p-4 pt-0 flex flex-col gap-2 mb-8'>
             <h2 className='font-lexend text-lg flex items-center gap-1 font-semibold tracking-tighter text-amber-950'><span className='text-xl font-medium text-amber-600'>$</span>sudo find /root/moreAboutMe</h2>
             <p className='tracking-tighter -mt-1 font-lexend text-right font-medium text-sm text-amber-700/50'>There's always more to tell</p>
             <main className='grid grid-cols-1 gap-8 my-6'>
