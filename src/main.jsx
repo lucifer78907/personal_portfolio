@@ -4,9 +4,12 @@ import './index.css'
 import 'swiper/css';
 import 'swiper/css/effect-cards';
 import App from './App.jsx'
+import SmoothScroll from './provider/smooth-scroll.jsx'
 
 createRoot(document.getElementById('root')).render(
-  <StrictMode>
-    <App />
-  </StrictMode>,
+  <SmoothScroll>
+    <StrictMode>
+      <App />
+    </StrictMode>,
+  </SmoothScroll>
 )
