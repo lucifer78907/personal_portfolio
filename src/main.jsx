@@ -10,6 +10,6 @@ createRoot(document.getElementById('root')).render(
   <SmoothScroll>
     <StrictMode>
       <App />
-    </StrictMode>,
+    </StrictMode>
   </SmoothScroll>
 )

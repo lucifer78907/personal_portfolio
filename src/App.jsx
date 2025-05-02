@@ -5,7 +5,7 @@ import RootLayout from "./layout/RootLayout";
 import HomePage from "./pages/HomePage";
 import Gallery from "./pages/Gallery";
 import Contact from "./pages/Contact";
-import Blog from "./pages/Blog";
+import Projects from "./pages/Projects";
 
 export default function App() {
   const router = createBrowserRouter(
@@ -27,8 +27,8 @@ export default function App() {
             element: <Contact />
           },
           {
-            path: '/blogs',
-            element: <Blog />
+            path: '/projects',
+            element: <Projects />
           }
         ]
       }
