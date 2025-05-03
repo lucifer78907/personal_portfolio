@@ -28,8 +28,10 @@ function Gallery() {
 
     return (
         <section className='p-4'>
-            <h1 className='text-xl font-semibold text-amber-700/50'>I love to click pictures sooo...</h1>
-            <p className='mt-2 text-sm text-right font-semibold text-amber-700/30'>Drumrolls ... (Ta daa)</p>
+            <header>
+                <h2 className='font-lexend text-4xl font-semibold tracking-tighter text-amber-950'>Life through lens...</h2>
+                <p className='tracking-tighter mt-1 font-lexend text-right font-medium text-sm text-amber-700/50'>its just a normal smartphone camera</p>
+            </header>
             <main className='mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2'>
                 {images.map((image, index) => (
                     <img key={index} src={image} alt={`Gallery picture`} className='w-full h-full object-cover' />
