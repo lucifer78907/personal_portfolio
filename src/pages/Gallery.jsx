@@ -34,7 +34,7 @@ function Gallery() {
             </header>
             <main className='mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2'>
                 {images.map((image, index) => (
-                    <img key={index} src={image} alt={`Gallery picture`} className='w-full h-full object-cover' />
+                    <img key={index} src={image} loading='lazy' decoding='async' alt={`Gallery picture`} className='w-full h-full object-cover' />
                 ))}
             </main>
         </section>

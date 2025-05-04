@@ -1,4 +1,27 @@
 import React from 'react'
+import { DiMongodb } from 'react-icons/di'
+import { FaExternalLinkAlt, FaGithub, FaNode, FaReact, FaSass } from 'react-icons/fa'
+import { IoLogoFirebase } from 'react-icons/io5'
+import { SiExpress, SiGreensock } from 'react-icons/si'
+
+const projects = [
+    {
+        id: 0,
+        title: 'Zentask',
+        description: 'Zentask is a goal tracking app which looks aestheically pleasing on the frontend while being feasiable and fast from the backend',
+        githubLink: 'https://github.com/lucifer78907/ZenTask',
+        liveLink: 'https://zentask-dd7c9.web.app/login',
+        techStackIcons: [FaReact, FaSass, SiExpress, DiMongodb, SiGreensock, IoLogoFirebase]
+    },
+    {
+        id: 1,
+        title: 'Offingo',
+        description: 'Offingo | Offingo is revolutionary tech product for offline retail fashion market to increase store footfall and multiply sales by 2x',
+        githubLink: 'https://github.com/lucifer78907/ZenTask',
+        liveLink: 'https://zentask-dd7c9.web.app/login',
+        techStackIcons: [FaReact, FaSass, SiExpress, DiMongodb, SiGreensock, IoLogoFirebase]
+    }
+]
 
 function Projects() {
     return (
@@ -7,8 +30,41 @@ function Projects() {
                 <h2 className='font-lexend text-6xl font-semibold tracking-tighter text-amber-950'>Projects</h2>
                 <p className='tracking-tighter mt-1 font-lexend text-right font-medium text-sm text-amber-700/50'>Talk's cheap! Show me the code</p>
             </header>
+            <main className='mt-4'>
+                {projects.map((project) => {
+                    return <ProjectCard key={project.id} {...project} />
+                })}
+
+            </main>
         </section>
     )
 }
 
 export default Projects
+
+export const ProjectCard = ({ title, githubLink, liveLink, description, techStackIcons }) => {
+    return <article className='p-6 shadow-md rounded-xl'>
+        <header>
+            <h2 className='text-base flex justify-between items-center text-amber-800 font-semibold'>{title}
+                <span className='text-xs flex items-center gap-2'>
+                    {githubLink &&
+                        <a href={githubLink} target='_blank'><FaGithub size={'1.2em'} /></a>
+                    }
+                    {liveLink &&
+                        <a href={liveLink} target='_blank'><FaExternalLinkAlt size={'1.2em'} /></a>
+                    }
+                </span>
+            </h2>
+            <p className='mt-1 text-xs text-neutral-800'>{description.length > 100 ? `${description.slice(0, 100)} ...` : description}</p>
+        </header>
+        <main className='mt-3'>
+            <p className='text-xs font-medium text-amber-700 flex items-center gap-2'>Tech stack -
+                <span className='flex flex-1 items-center justify-around'>
+                    {techStackIcons.map((IconComponent, index) => (
+                        <IconComponent key={index} size="1.4em" />
+                    ))}
+                </span>
+            </p>
+        </main>
+    </article>
+}
