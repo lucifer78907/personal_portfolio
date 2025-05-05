@@ -8,7 +8,7 @@ import { EffectCards } from 'swiper/modules';
 
 const Poloroids = () => {
     return (
-        <aside className='-mt-4 sm:max-w-sm md:max-w-md xl:max-w-sm 2xl:max-w-lg sm:mx-auto'>
+        <aside className='-mt-4 sm:max-w-sm md:max-w-md xl:w-full sm:mx-auto'>
             <Swiper
                 effect={'cards'}
                 grabCursor={true}
