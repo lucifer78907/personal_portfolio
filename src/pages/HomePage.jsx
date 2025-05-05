@@ -4,10 +4,10 @@ import About from '../components/About/About';
 import Skills from '../components/Skills/Skills';
 import Grid from '../components/Grid/Grid';
 
-// #TODO - Responsive
 // #TODO - Anmiations
-// #TODO - Home section revamp - add TLDR, experience etc
+// #TODO - Entry loader animation
 // #TODO - theme switcher
+// #TODO - favicon add
 
 const HomePage = () => {
     return (
