@@ -4,12 +4,17 @@ import About from '../components/About/About';
 import Skills from '../components/Skills/Skills';
 import Grid from '../components/Grid/Grid';
 
+// #TODO - Responsive
+// #TODO - Anmiations
+// #TODO - Home section revamp - add TLDR, experience etc
+// #TODO - theme switcher
+
 const HomePage = () => {
     return (
         <>
             <Hero />
-            <About />
             <Grid />
+            <About />
             <Skills />
         </>
     );

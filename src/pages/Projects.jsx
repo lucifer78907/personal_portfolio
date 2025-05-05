@@ -57,10 +57,10 @@ function Projects() {
     return (
         <section className='p-6'>
             <header>
-                <h2 className='font-lexend text-6xl font-semibold tracking-tighter text-amber-950'>Projects</h2>
-                <p className='tracking-tighter mt-1 font-lexend text-right font-medium text-sm text-amber-700/50'>Talk's cheap! Show me the code</p>
+                <h2 className='font-lexend text-6xl md:text-7xl font-semibold tracking-tighter text-amber-950'>Projects</h2>
+                <p className='tracking-tighter mt-1 font-lexend sm:text-base text-right font-medium text-sm text-amber-700/50'>Talk's cheap! Show me the code</p>
             </header>
-            <main className='mt-4 flex items-center gap-4 flex-col'>
+            <main className='mt-4 flex  gap-4 flex-col sm:gap-8'>
                 {projects.map((project) => {
                     return <ProjectCard key={project.id} {...project} />
                 })}
@@ -75,21 +75,21 @@ export default Projects
 export const ProjectCard = ({ title, githubLink, liveLink, description, techStackIcons }) => {
     return <article className='p-6 shadow-md rounded-xl'>
         <header>
-            <h2 className='text-base flex justify-between items-center text-amber-800 font-semibold'>{title}
-                <span className='text-xs flex items-center gap-2'>
+            <h2 className='text-base sm:text-xl md:text-2xl font-lexend flex justify-between items-center text-amber-800 font-semibold'>{title}
+                <span className='text-xs sm:text-base flex  gap-2'>
                     {githubLink &&
                         <a href={githubLink} target='_blank'><FaGithub size={'1.2em'} /></a>
                     }
                     {liveLink &&
                         <a href={liveLink} target='_blank'><FaExternalLinkAlt size={'1.2em'} /></a>
                     }
-                    {!githubLink && !liveLink && <p className='flex items-top gap-1'><RiGitRepositoryPrivateFill /> Private repo</p>}
+                    {!githubLink && !liveLink && <p className='flex items-stretch  gap-1'><RiGitRepositoryPrivateFill className='mt-1' /> Private repo</p>}
                 </span>
             </h2>
-            <p className='mt-1 text-xs text-neutral-800'>{description.length > 100 ? `${description.slice(0, 100)} ...` : description}</p>
+            <p className='mt-1 text-xs sm:text-base sm:mt-2 text-neutral-800'>{description.length > 100 ? `${description.slice(0, 100)} ...` : description}</p>
         </header>
         <main className='mt-3'>
-            <p className='text-xs font-medium text-amber-700 flex items-center gap-2'>Tech stack -
+            <p className='text-xs sm:text-base font-medium text-amber-700 flex items-center gap-2'>Tech stack -
                 <span className='flex flex-1 items-center justify-around'>
                     {techStackIcons.map((IconComponent, index) => (
                         <IconComponent key={index} size="1.4em" />

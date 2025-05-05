@@ -5,10 +5,13 @@ import Header from '../components/Header';
 const RootLayout = () => {
     return (
         <>
-            <Header />
-            <main className='overflow-x-hidden'>
-                <Outlet />
-            </main>
+            <div className='sm:w-3/4 mx-auto lg:w-3/5'>
+
+                <Header />
+                <main className='overflow-x-hidden'>
+                    <Outlet />
+                </main>
+            </div>
         </>
     );
 };
