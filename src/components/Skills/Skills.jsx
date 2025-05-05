@@ -22,9 +22,9 @@ const Skills = () => {
 
 
     return (
-        <section className='p-4 flex flex-col gap-2 mb-12'>
-            <h2 className='font-lexend text-6xl md:text-7xl font-semibold tracking-tighter text-amber-950'>Ctrl + Alt + Skills</h2>
-            <p className='tracking-tighter -mt-1 font-lexend sm:text-base text-right font-medium text-sm text-amber-700/50'>Endorsed by Mom and Linkedin</p>
+        <section className='p-4 flex flex-col gap-2 mb-12 2xl:w-3/4 2xl:mx-auto'>
+            <h2 className='font-lexend text-6xl md:text-7xl xl:text-8xl font-semibold tracking-tighter text-amber-950'>Ctrl + Alt + Skills</h2>
+            <p className='tracking-tighter -mt-1 font-lexend lg:mt-4 xl:text-xl sm:text-base text-right font-medium text-sm text-amber-700/50'>Endorsed by Mom and Linkedin</p>
             {clicked ?
                 (
                     <main className='mt-4 grid grid-cols-2 gap-6 md:grid-cols-3 lg:grid-cols-4'>
@@ -44,7 +44,7 @@ const Skills = () => {
                 ) :
                 (
                     <main className='mt-4 '>
-                        <h3 className='font-lexend text-xl md:text-2xl p-2 text-amber-950'><span className='font-medium text-amber-700'>db</span>.skills.<span className='font-semibold text-amber-600'>find</span>{'({'}
+                        <h3 className='font-lexend text-xl md:text-2xl xl:text-3xl p-2 text-amber-950'><span className='font-medium text-amber-700'>db</span>.skills.<span className='font-semibold text-amber-600'>find</span>{'({'}
                             <p className='ml-4'>{"{ id: '476967642049534f' }"}</p>
                             <p className='ml-4'>{"{ name: 'Rudra' }"}</p>
                             <p>{'});'}</p>

@@ -29,8 +29,8 @@ function Gallery() {
     return (
         <section className='p-4'>
             <header>
-                <h2 className='font-lexend text-4xl sm:text-5xl md:text-6xl font-semibold tracking-tighter text-amber-950'>Life through lens...</h2>
-                <p className='tracking-tighter mt-1 font-lexend text-right font-medium text-sm text-amber-700/50'>its just a normal smartphone camera</p>
+                <h2 className='font-lexend text-4xl sm:text-5xl md:text-7xl font-semibold tracking-tighter text-amber-950'>Life through lens...</h2>
+                <p className='tracking-tighter mt-1 font-lexend text-right xl:text-xl xl:mt-4 font-medium text-sm text-amber-700/50'>its just a normal smartphone camera</p>
             </header>
             <main className='mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2'>
                 {images.map((image, index) => (

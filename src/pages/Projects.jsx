@@ -55,10 +55,10 @@ const projects = [
 
 function Projects() {
     return (
-        <section className='p-6'>
+        <section className='p-6 2xl:w-3/4 2xl:mx-auto'>
             <header>
                 <h2 className='font-lexend text-6xl md:text-7xl font-semibold tracking-tighter text-amber-950'>Projects</h2>
-                <p className='tracking-tighter mt-1 font-lexend sm:text-base text-right font-medium text-sm text-amber-700/50'>Talk's cheap! Show me the code</p>
+                <p className='tracking-tighter mt-1 font-lexend sm:text-base lg:text-lg text-right font-medium text-sm text-amber-700/50'>Talk's cheap! Show me the code</p>
             </header>
             <main className='mt-4 flex  gap-4 flex-col sm:gap-8'>
                 {projects.map((project) => {
@@ -75,8 +75,8 @@ export default Projects
 export const ProjectCard = ({ title, githubLink, liveLink, description, techStackIcons }) => {
     return <article className='p-6 shadow-md rounded-xl'>
         <header>
-            <h2 className='text-base sm:text-xl md:text-2xl font-lexend flex justify-between items-center text-amber-800 font-semibold'>{title}
-                <span className='text-xs sm:text-base flex  gap-2'>
+            <h2 className='text-base sm:text-xl md:text-2xl xl:text-3xl font-lexend flex justify-between items-center text-amber-800 font-semibold'>{title}
+                <span className='text-xs sm:text-base xl:text-lg flex  gap-2'>
                     {githubLink &&
                         <a href={githubLink} target='_blank'><FaGithub size={'1.2em'} /></a>
                     }
@@ -86,10 +86,11 @@ export const ProjectCard = ({ title, githubLink, liveLink, description, techStac
                     {!githubLink && !liveLink && <p className='flex items-stretch  gap-1'><RiGitRepositoryPrivateFill className='mt-1' /> Private repo</p>}
                 </span>
             </h2>
-            <p className='mt-1 text-xs sm:text-base sm:mt-2 text-neutral-800'>{description.length > 100 ? `${description.slice(0, 100)} ...` : description}</p>
+            <p className='mt-1 text-xs sm:text-base xl:hidden xl:text-lg sm:mt-2 text-neutral-800'>{description.length > 100 ? `${description.slice(0, 100)} ...` : description}</p>
+            <p className='hidden xl:block mt-1 text-lg sm:mt-2 text-neutral-800'>{description}</p>
         </header>
         <main className='mt-3'>
-            <p className='text-xs sm:text-base font-medium text-amber-700 flex items-center gap-2'>Tech stack -
+            <p className='text-xs sm:text-base xl:text-lg font-medium text-amber-700 flex items-center gap-2'>Tech stack -
                 <span className='flex flex-1 items-center justify-around'>
                     {techStackIcons.map((IconComponent, index) => (
                         <IconComponent key={index} size="1.4em" />
