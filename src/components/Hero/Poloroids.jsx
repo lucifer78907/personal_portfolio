@@ -5,15 +5,30 @@ import imagePoloroid4 from '../../assets/poloroid_4.png'
 import imagePoloroid5 from '../../assets/poloroid_5.png'
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { EffectCards } from 'swiper/modules';
+import { Autoplay } from 'swiper/modules'
 import { MdOutlineSwipe } from 'react-icons/md'
+import { ScrollTrigger } from 'gsap/all'
 
 const Poloroids = () => {
     return (
-        <aside className='-mt-4 sm:max-w-sm md:max-w-md xl:w-full sm:mx-auto relative'>
+        <aside className='-mt-4 max-w-sm h-full md:max-w-md xl:w-full sm:mx-auto relative'>
             <Swiper
                 effect={'cards'}
+                onInit={() => {
+                    ScrollTrigger.refresh(); console.log("RENDERED")
+                }}
+                onSlideChange={(swiper) => {
+                    if (swiper.realIndex === 0 && swiper.autoplay.running) {
+                        swiper.autoplay.stop(); // ✅ stop autoplay once we looped back to the start
+                        console.log('Autoplay stopped after one full loop');
+                    }
+                }}
                 grabCursor={true}
-                modules={[EffectCards]}
+                modules={[EffectCards, Autoplay]}
+                autoplay={{
+                    delay: 2500, // Change slide every 2 seconds
+                    disableOnInteraction: true, // Continue autoplay even after user interaction
+                }}
                 cardsEffect={
                     {
                         slideShadows: false,
