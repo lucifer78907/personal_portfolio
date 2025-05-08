@@ -5,11 +5,14 @@ import 'swiper/css';
 import 'swiper/css/effect-cards';
 import App from './App.jsx'
 import SmoothScroll from './provider/smooth-scroll.jsx'
+import { TimelineContextProvider } from './context/timelineContext.jsx';
 
 createRoot(document.getElementById('root')).render(
   <SmoothScroll>
     <StrictMode>
-      <App />
+      <TimelineContextProvider>
+        <App />
+      </TimelineContextProvider>
     </StrictMode>
   </SmoothScroll>
 )

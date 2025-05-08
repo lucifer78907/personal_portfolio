@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import Hero from '../components/Hero/Hero';
 import About from '../components/About/About';
 import Skills from '../components/Skills/Skills';
 import Grid from '../components/Grid/Grid';
+import timelineContext from '../context/timelineContext';
 
 // #TODO - Anmiations
 // #TODO - Entry loader animation
@@ -10,9 +11,11 @@ import Grid from '../components/Grid/Grid';
 // #TODO - favicon add
 
 const HomePage = () => {
+    const { addAnimation } = useContext(timelineContext)
+
     return (
         <>
-            <Hero />
+            <Hero addAnimation={addAnimation} index={60} />
             <Grid />
             <About />
             <Skills />

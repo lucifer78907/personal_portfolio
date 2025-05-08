@@ -23,64 +23,64 @@ const description = [
     },
 ]
 
-const Hero = () => {
+const Hero = ({ addAnimation, index }) => {
     const containerRef = useRef();
 
     useGSAP(() => {
-        const startHeaderAnmitions = () => {
 
-            let splitHeading = SplitText.create('.heading', {
-                type: 'chars',
-                mask: 'chars',
-            })
+        let splitHeading = SplitText.create('.heading', {
+            type: 'chars',
+            mask: 'chars',
+        })
 
-            let splitDesc = SplitText.create('.desc', {
-                type: 'lines',
-                mask: 'lines',
-            });
+        let splitDesc = SplitText.create('.desc', {
+            type: 'lines',
+            mask: 'lines',
+        });
 
-            let splitTagLine = SplitText.create('.para', {
-                type: 'lines',
-                mask: 'lines',
-            });
+        let splitTagLine = SplitText.create('.para', {
+            type: 'lines',
+            mask: 'lines',
+        });
 
 
-            let tl = gsap.timeline();
+        let tl = gsap.timeline();
 
-            gsap.from(splitDesc.lines, {
-                yPercent: 100,
-                opacity: 0,
-                stagger: 0.1,
-                ease: "expo.out",
-                scrollTrigger: {
-                    trigger: '.desc',
-                    toggleActions: 'play none none reverse',
-                    scrub: 2,
-                    start: 'top center',
-                    end: `+=${document.querySelector('.desc').offsetHeight}`,
-                    markers: true,
-                }
-            });
+        gsap.from(splitDesc.lines, {
+            yPercent: 100,
+            opacity: 0,
+            stagger: 0.1,
+            ease: "expo.out",
+            scrollTrigger: {
+                trigger: '.desc',
+                toggleActions: 'play none none reverse',
+                scrub: 2,
+                start: 'top center',
+                end: `+=${document.querySelector('.desc').offsetHeight}`,
+                // markers: true,
+            }
+        });
 
-            tl.from(splitHeading.chars, {
-                duration: 0.6,
-                yPercent: 100,
-                opacity: 0,
-                stagger: 0.1,
-                ease: "expo.out",
-            })
+        tl.from(splitHeading.chars, {
+            duration: 0.6,
+            yPercent: 100,
+            opacity: 0,
+            stagger: 0.1,
+            ease: "expo.out",
+        })
 
-            tl.from(splitTagLine.lines, {
-                yPercent: 100,
-                opacity: 0,
-                stagger: 0.2,
-                ease: 'expo.out',
-                duration: 1
-            },)
+        tl.from(splitTagLine.lines, {
+            yPercent: 100,
+            opacity: 0,
+            stagger: 0.2,
+            ease: 'expo.out',
+            duration: 1
+        },)
 
-        }
+        addAnimation(tl, "+=0.1");
 
-        setTimeout(() => startHeaderAnmitions(), 6000)
+
+
     }, { scope: containerRef })
 
 

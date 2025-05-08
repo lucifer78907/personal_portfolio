@@ -3,7 +3,7 @@ import { useLayoutEffect, useRef } from "react";
 import { useGSAP } from "@gsap/react";
 // Components
 
-const HeroLoader = () => {
+const HeroLoader = ({ addAnimation, index }) => {
     const counterRef = useRef(null);
 
     useLayoutEffect(() => {
@@ -53,6 +53,7 @@ const HeroLoader = () => {
             "<"
         );
         tl.set(".hero__overlay", { display: "none" });
+        addAnimation(tl, index);
     });
 
     return (
