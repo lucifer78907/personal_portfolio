@@ -6,8 +6,14 @@ import HomePage from "./pages/HomePage";
 import Gallery from "./pages/Gallery";
 import Contact from "./pages/Contact";
 import Projects from "./pages/Projects";
+import { SplitText } from 'gsap/all';
+import ScrollTrigger from 'gsap/ScrollTrigger';
+import gsap from 'gsap';
 
 export default function App() {
+  // gsap dependencies
+  gsap.registerPlugin(SplitText);
+  gsap.registerPlugin(ScrollTrigger);
   const router = createBrowserRouter(
     [
       {

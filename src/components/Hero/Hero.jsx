@@ -1,10 +1,8 @@
 import React, { useRef } from 'react';
 import Poloroids from './Poloroids';
 import { useGSAP } from '@gsap/react';
-import { DrawSVGPlugin, ScrambleTextPlugin, SplitText } from 'gsap/all';
-import ScrollTrigger from 'gsap/ScrollTrigger';
+import { SplitText } from 'gsap/all';
 import gsap from 'gsap';
-
 
 const description = [
     {
@@ -27,61 +25,62 @@ const description = [
 
 const Hero = () => {
     const containerRef = useRef();
-    gsap.registerPlugin(SplitText);
-    gsap.registerPlugin(ScrambleTextPlugin);
-    gsap.registerPlugin(ScrollTrigger);
-    gsap.registerPlugin(DrawSVGPlugin);
 
     useGSAP(() => {
-        let splitHeading = SplitText.create('.heading', {
-            type: 'chars',
-            mask: 'chars',
-        })
+        const startHeaderAnmitions = () => {
 
-        let splitDesc = SplitText.create('.desc', {
-            type: 'lines',
-            mask: 'lines',
-        });
+            let splitHeading = SplitText.create('.heading', {
+                type: 'chars',
+                mask: 'chars',
+            })
 
-        let splitTagLine = SplitText.create('.para', {
-            type: 'lines',
-            mask: 'lines',
-        });
+            let splitDesc = SplitText.create('.desc', {
+                type: 'lines',
+                mask: 'lines',
+            });
+
+            let splitTagLine = SplitText.create('.para', {
+                type: 'lines',
+                mask: 'lines',
+            });
 
 
-        let tl = gsap.timeline();
+            let tl = gsap.timeline();
 
-        gsap.from(splitDesc.lines, {
-            yPercent: 100,
-            opacity: 0,
-            stagger: 0.1,
-            ease: "expo.out",
-            scrollTrigger: {
-                trigger: '.desc',
-                toggleActions: 'play none none reverse',
-                scrub: 2,
-                start: 'top center',
-                end: `+=${document.querySelector('.desc').offsetHeight}`,
-                markers: true,
-            }
-        });
+            gsap.from(splitDesc.lines, {
+                yPercent: 100,
+                opacity: 0,
+                stagger: 0.1,
+                ease: "expo.out",
+                scrollTrigger: {
+                    trigger: '.desc',
+                    toggleActions: 'play none none reverse',
+                    scrub: 2,
+                    start: 'top center',
+                    end: `+=${document.querySelector('.desc').offsetHeight}`,
+                    markers: true,
+                }
+            });
 
-        tl.from(splitHeading.chars, {
-            duration: 0.6,
-            yPercent: 100,
-            opacity: 0,
-            stagger: 0.1,
-            ease: "expo.out",
-        })
+            tl.from(splitHeading.chars, {
+                duration: 0.6,
+                yPercent: 100,
+                opacity: 0,
+                stagger: 0.1,
+                ease: "expo.out",
+            })
 
-        tl.from(splitTagLine.lines, {
-            yPercent: 100,
-            opacity: 0,
-            stagger: 0.2,
-            ease: 'expo.out',
-            duration: 1
-        },)
+            tl.from(splitTagLine.lines, {
+                yPercent: 100,
+                opacity: 0,
+                stagger: 0.2,
+                ease: 'expo.out',
+                duration: 1
+            },)
 
+        }
+
+        setTimeout(() => startHeaderAnmitions(), 6000)
     }, { scope: containerRef })
 
 

@@ -8,10 +8,17 @@ import { EffectCards } from 'swiper/modules';
 import { Autoplay } from 'swiper/modules'
 import { MdOutlineSwipe } from 'react-icons/md'
 import { ScrollTrigger } from 'gsap/all'
+import { useGSAP } from '@gsap/react'
+import gsap from 'gsap'
 
 const Poloroids = () => {
+
+    useGSAP(() => {
+        gsap.from('.container', { xPercent: 100, opacity: 0, duration: 3, ease: 'expo.out' })
+    })
+
     return (
-        <aside className='-mt-4 max-w-sm h-full md:max-w-md xl:w-full sm:mx-auto relative'>
+        <aside className='container -mt-4 max-w-sm h-full md:max-w-md xl:w-full sm:mx-auto relative'>
             <Swiper
                 effect={'cards'}
                 onInit={() => {
@@ -26,7 +33,7 @@ const Poloroids = () => {
                 grabCursor={true}
                 modules={[EffectCards, Autoplay]}
                 autoplay={{
-                    delay: 2500, // Change slide every 2 seconds
+                    delay: 4500, // Change slide every 2 seconds
                     disableOnInteraction: true, // Continue autoplay even after user interaction
                 }}
                 cardsEffect={
