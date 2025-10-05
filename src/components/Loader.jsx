@@ -39,18 +39,18 @@ const HeroLoader = ({ addAnimation, index }) => {
 
     useGSAP(() => {
         const tl = gsap.timeline();
-        tl.to(".hero__counter", { duration: 0.25, delay: 3.5, opacity: 0 });
+        tl.to(".hero__counter", { duration: 0.2, delay: 2.2, opacity: 0 });
         tl.to(
             ".hero__bar",
             {
-                duration: 1.5,
+                duration: 1,
                 height: 0,
                 stagger: {
-                    amount: 0.5,
+                    amount: 0.3,
                 },
-                ease: "power4.inOut",
+                ease: "power3.inOut",
             },
-            "<"
+            "-=0.1"
         );
         tl.set(".hero__overlay", { display: "none" });
         addAnimation(tl, index);

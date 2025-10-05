@@ -34,11 +34,6 @@ const Hero = ({ addAnimation, index }) => {
             mask: 'chars',
         })
 
-        let splitDesc = SplitText.create('.desc', {
-            type: 'lines',
-            mask: 'lines',
-        });
-
         let splitTagLine = SplitText.create('.para', {
             type: 'lines',
             mask: 'lines',
@@ -47,36 +42,28 @@ const Hero = ({ addAnimation, index }) => {
 
         let tl = gsap.timeline();
 
-        gsap.from(splitDesc.lines, {
-            yPercent: 100,
-            opacity: 0,
-            stagger: 0.1,
-            ease: "expo.out",
-            scrollTrigger: {
-                trigger: '.desc',
-                toggleActions: 'play none none reverse',
-                scrub: 2,
-                start: 'top center',
-                end: `+=${document.querySelector('.desc').offsetHeight}`,
-                // markers: true,
-            }
-        });
-
         tl.from(splitHeading.chars, {
-            duration: 0.6,
+            duration: 0.8,
             yPercent: 100,
             opacity: 0,
-            stagger: 0.1,
-            ease: "expo.out",
+            stagger: 0.04,
+            ease: "power3.out",
         })
 
         tl.from(splitTagLine.lines, {
             yPercent: 100,
             opacity: 0,
-            stagger: 0.2,
-            ease: 'expo.out',
-            duration: 1,
-        },)
+            stagger: 0.1,
+            ease: 'power2.out',
+            duration: 0.6,
+        }, "-=0.4")
+
+        tl.from('.desc', {
+            opacity: 0,
+            y: 30,
+            ease: 'power2.out',
+            duration: 0.8,
+        }, "-=0.3")
 
         setTotalTime(tl.totalDuration());
         addAnimation(tl, "+=0.1");
