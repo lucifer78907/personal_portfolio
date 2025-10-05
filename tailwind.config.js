@@ -7,11 +7,13 @@ export default {
   theme: {
     extend: {
        fontFamily: {
-        lexend: ['Lexend', 'serif'], 
+        lexend: ['Lexend', 'serif'],
       },
       boxShadow: {
               retro: '4px 4px 0px #d97706, 8px 8px 0px #f59e0b, 12px 12px 0px #fbbf24',
-
+      },
+      animation: {
+        'bounce-slow': 'bounce 1s ease-in-out',
       },
     },
   },
