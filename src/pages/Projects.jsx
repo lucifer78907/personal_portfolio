@@ -16,7 +16,7 @@ const projects = [
         title: 'Initializ.ai Console',
         description: 'Building enterprise GenAI platform dashboards with agentic workflows, knowledge bases, and RAG systems. Full-stack unified platform for AI application deployment with GPU optimization and serverless inferencing',
         liveLink: 'https://www.initializ.ai/',
-        techStackIcons: [FaRobot, FaBrain, SiOpenai, HiSparkles, SiKubernetes, FaDocker, SiPostgresql, RiNextjsFill],
+        techStackIcons: [FaBrain, SiOpenai, HiSparkles, FaDocker, SiPostgresql, RiNextjsFill],
         isAI: true
     },
     {
@@ -151,15 +151,13 @@ export default Projects;
 
 export const ProjectCard = ({ title, githubLink, liveLink, description, techStackIcons, isAI }) => {
     return (
-        <article className={`project-card group p-6 sm:p-8 bg-gradient-to-br backdrop-blur-sm shadow-lg hover:shadow-2xl rounded-2xl border transition-all duration-500 hover:scale-[1.02] hover:-translate-y-1 ${
-            isAI
-                ? 'from-purple-50/40 via-blue-50/30 to-amber-50/30 border-purple-300/30 hover:border-purple-400/50'
-                : 'from-amber-50/30 to-amber-100/20 border-amber-200/30'
-        }`}>
+        <article className={`project-card group p-6 sm:p-8 bg-gradient-to-br backdrop-blur-sm shadow-lg hover:shadow-2xl rounded-2xl border transition-all duration-500 hover:scale-[1.02] hover:-translate-y-1 ${isAI
+            ? 'from-purple-50/40 via-blue-50/30 to-amber-50/30 border-purple-300/30 hover:border-purple-400/50'
+            : 'from-amber-50/30 to-amber-100/20 border-amber-200/30'
+            }`}>
             <header>
-                <h2 className={`text-lg sm:text-2xl md:text-3xl xl:text-4xl font-lexend flex justify-between items-start gap-4 font-bold mb-3 ${
-                    isAI ? 'text-purple-900 group-hover:text-purple-700' : 'text-amber-900 group-hover:text-amber-800'
-                } transition-colors duration-300`}>
+                <h2 className={`text-lg sm:text-2xl md:text-3xl xl:text-4xl font-lexend flex justify-between items-start gap-4 font-bold mb-3 ${isAI ? 'text-purple-900 group-hover:text-purple-700' : 'text-amber-900 group-hover:text-amber-800'
+                    } transition-colors duration-300`}>
                     <span className='flex-1 flex items-center gap-2'>
                         {title}
                         {isAI && <HiSparkles className='text-purple-500 animate-pulse' size={'0.5em'} />}
@@ -181,9 +179,8 @@ export const ProjectCard = ({ title, githubLink, liveLink, description, techStac
                                 href={liveLink}
                                 target='_blank'
                                 rel='noopener noreferrer'
-                                className={`transition-all duration-300 hover:scale-110 active:scale-95 ${
-                                    isAI ? 'hover:text-purple-700' : 'hover:text-amber-900'
-                                }`}
+                                className={`transition-all duration-300 hover:scale-110 active:scale-95  ${isAI ? 'hover:text-purple-700 text-purple-700' : 'hover:text-amber-900'
+                                    }`}
                                 aria-label='Live Demo'
                             >
                                 <FaExternalLinkAlt size={'0.9em'} />
@@ -203,18 +200,16 @@ export const ProjectCard = ({ title, githubLink, liveLink, description, techStac
             </header>
             <main className='mt-6'>
                 <div className='flex items-center gap-3 flex-wrap'>
-                    <p className={`text-xs sm:text-sm xl:text-base font-semibold font-lexend ${
-                        isAI ? 'text-purple-800' : 'text-amber-800'
-                    }`}>
+                    <p className={`text-xs sm:text-sm xl:text-base font-semibold font-lexend ${isAI ? 'text-purple-800' : 'text-amber-800'
+                        }`}>
                         Tech Stack
                     </p>
                     <div className='flex flex-1 items-center justify-end gap-3 sm:gap-4 flex-wrap'>
                         {techStackIcons.map((IconComponent, index) => (
                             <span
                                 key={index}
-                                className={`transition-all duration-300 hover:scale-125 cursor-default ${
-                                    isAI ? 'text-purple-600 hover:text-purple-800' : 'text-amber-700 hover:text-amber-900'
-                                }`}
+                                className={`transition-all duration-300 hover:scale-125 cursor-default ${isAI ? 'text-purple-600 hover:text-purple-800' : 'text-amber-700 hover:text-amber-900'
+                                    }`}
                                 style={{
                                     animation: `float 3s ease-in-out infinite`,
                                     animationDelay: `${index * 0.2}s`
@@ -228,11 +223,10 @@ export const ProjectCard = ({ title, githubLink, liveLink, description, techStac
             </main>
 
             {/* Decorative gradient line */}
-            <div className={`mt-6 h-1 w-0 group-hover:w-full rounded-full transition-all duration-700 ease-out ${
-                isAI
-                    ? 'bg-gradient-to-r from-purple-600 via-blue-500 to-purple-400'
-                    : 'bg-gradient-to-r from-amber-600 via-amber-500 to-amber-400'
-            }`}></div>
+            <div className={`mt-6 h-1 w-0 group-hover:w-full rounded-full transition-all duration-700 ease-out ${isAI
+                ? 'bg-gradient-to-r from-purple-600 via-blue-500 to-purple-400'
+                : 'bg-gradient-to-r from-amber-600 via-amber-500 to-amber-400'
+                }`}></div>
         </article>
     );
 };
