@@ -3,20 +3,37 @@ import { useGSAP } from '@gsap/react';
 import gsap from 'gsap';
 import { ScrollTrigger, SplitText } from 'gsap/all';
 import { DiMongodb } from 'react-icons/di';
-import { FaAws, FaCss3, FaDocker, FaExternalLinkAlt, FaGithub, FaHtml5, FaNode, FaReact, FaSass } from 'react-icons/fa';
+import { FaAws, FaCss3, FaDocker, FaExternalLinkAlt, FaGithub, FaHtml5, FaMobileAlt, FaNode, FaReact, FaSass, FaBrain, FaRobot } from 'react-icons/fa';
 import { IoLogoFirebase } from 'react-icons/io5';
 import { RiGitRepositoryPrivateFill, RiNextjsFill, RiTailwindCssFill } from 'react-icons/ri';
-import { SiExpress, SiGreensock, SiJavascript, SiNetlify, SiReactrouter, SiSwiper, SiTypescript } from 'react-icons/si';
+import { SiExpress, SiGreensock, SiJavascript, SiNetlify, SiReactrouter, SiSwiper, SiTypescript, SiOpenai, SiKubernetes, SiPostgresql } from 'react-icons/si';
+import { HiSparkles } from 'react-icons/hi2';
+import { TbPlugConnected } from 'react-icons/tb';
 
 const projects = [
     {
         id: 0,
-        title: 'Offingo',
-        description: 'Offingo | Offingo is revolutionary tech product for offline retail fashion market to increase store footfall and multiply sales by 2x',
-        techStackIcons: [RiNextjsFill, RiTailwindCssFill, SiTypescript, FaAws, FaDocker, SiSwiper]
+        title: 'Initializ.ai Console',
+        description: 'Building enterprise GenAI platform dashboards with agentic workflows, knowledge bases, and RAG systems. Full-stack unified platform for AI application deployment with GPU optimization and serverless inferencing',
+        liveLink: 'https://www.initializ.ai/',
+        techStackIcons: [FaRobot, FaBrain, SiOpenai, HiSparkles, SiKubernetes, FaDocker, SiPostgresql, RiNextjsFill],
+        isAI: true
     },
     {
         id: 1,
+        title: 'LoanNetwork',
+        description: 'AI-powered fintech loan marketplace connecting borrowers with top banks. Building responsive web app (Next.js) and mobile app (React Native) for instant loan comparison and digital processing',
+        liveLink: 'https://loannetwork.app/',
+        techStackIcons: [RiNextjsFill, FaMobileAlt, SiTypescript, RiTailwindCssFill, FaReact, SiOpenai, FaAws],
+    },
+    {
+        id: 2,
+        title: 'Offingo',
+        description: 'Offingo is revolutionary tech product for offline retail fashion market to increase store footfall and multiply sales by 2x',
+        techStackIcons: [RiNextjsFill, RiTailwindCssFill, SiTypescript, FaAws, FaDocker, SiSwiper]
+    },
+    {
+        id: 3,
         title: 'Zentask',
         description: 'Zentask is a goal tracking app which looks aestheically pleasing on the frontend while being feasiable and fast from the backend',
         githubLink: 'https://github.com/lucifer78907/ZenTask',
@@ -24,14 +41,14 @@ const projects = [
         techStackIcons: [FaReact, FaSass, SiExpress, DiMongodb, SiGreensock, IoLogoFirebase]
     },
     {
-        id: 2,
+        id: 4,
         title: 'TrackIt',
         description: 'An application for University for tracking its buses and mointering them in real time. It is a frontend project ',
         githubLink: 'https://github.com/lucifer78907/TrackIt/tree/main/frontend',
         techStackIcons: [FaReact, FaSass, SiGreensock, SiReactrouter]
     },
     {
-        id: 3,
+        id: 5,
         title: 'Lawyer firm website',
         description: 'This is a website for a law firm Karan Chauhary and associates',
         githubLink: 'https://github.com/lucifer78907/Karan_Chaudhary_and_associates_website',
@@ -39,7 +56,7 @@ const projects = [
         techStackIcons: [FaHtml5, FaSass, SiJavascript, SiNetlify]
     },
     {
-        id: 4,
+        id: 6,
         title: 'Iron Temple Gym',
         description: 'A simple landing page for a gym , made using HTML and vanilla CSS and JS ',
         githubLink: 'https://github.com/lucifer78907/Gym_landing_page',
@@ -47,7 +64,7 @@ const projects = [
         techStackIcons: [FaHtml5, FaCss3, SiJavascript, SiNetlify]
     },
     {
-        id: 5,
+        id: 7,
         title: 'Omnifood restaurant',
         description: 'A landing page made for a fictional restaurant using HTML,CSS and JS ',
         liveLink: 'https://omnifood-rudra-website.netlify.app/',
