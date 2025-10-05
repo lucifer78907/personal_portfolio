@@ -46,6 +46,11 @@ const Contact = () => {
     };
 
     useGSAP(() => {
+        // Set initial visibility
+        gsap.set(['.contact-heading', '.contact-subheading', '.contact-form'], {
+            visibility: 'visible'
+        });
+
         // Heading animation - word by word reveal
         const splitHeading = SplitText.create('.contact-heading', {
             type: 'words,chars',
@@ -58,8 +63,8 @@ const Contact = () => {
             ease: "power3.out",
             scrollTrigger: {
                 trigger: '.contact-heading',
-                start: 'top 75%',
-                end: 'top 45%',
+                start: 'top 85%',
+                end: 'top 55%',
                 scrub: 1,
                 toggleActions: 'play none none reverse',
             }
@@ -71,8 +76,8 @@ const Contact = () => {
             x: 30,
             scrollTrigger: {
                 trigger: '.contact-subheading',
-                start: 'top 75%',
-                end: 'top 55%',
+                start: 'top 85%',
+                end: 'top 65%',
                 scrub: 1.2,
                 toggleActions: 'play none none reverse',
             }
@@ -84,14 +89,17 @@ const Contact = () => {
             y: 40,
             scrollTrigger: {
                 trigger: '.contact-form',
-                start: 'top 70%',
-                end: 'top 45%',
+                start: 'top 80%',
+                end: 'top 55%',
                 scrub: 1.5,
                 toggleActions: 'play none none reverse',
             }
         });
 
-        ScrollTrigger.refresh();
+        // Refresh ScrollTrigger after setup
+        setTimeout(() => {
+            ScrollTrigger.refresh();
+        }, 100);
     }, { scope: containerRef });
 
     return (

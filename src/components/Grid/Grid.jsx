@@ -9,6 +9,11 @@ function Grid() {
     const containerRef = useRef();
 
     useGSAP(() => {
+        // Set initial visibility
+        gsap.set(['.grid-heading', '.grid-subheading', '.grid-card', '.grid-icon'], {
+            visibility: 'visible'
+        });
+
         // Split heading text for character animation
         const splitHeading = SplitText.create('.grid-heading', {
             type: 'chars',
@@ -27,8 +32,8 @@ function Grid() {
             ease: "power3.out",
             scrollTrigger: {
                 trigger: '.grid-heading',
-                start: 'top 80%',
-                end: 'top 50%',
+                start: 'top 90%',
+                end: 'top 60%',
                 scrub: 1,
                 toggleActions: 'play none none reverse',
             }
@@ -42,8 +47,8 @@ function Grid() {
             ease: "power2.out",
             scrollTrigger: {
                 trigger: '.grid-subheading',
-                start: 'top 80%',
-                end: 'top 55%',
+                start: 'top 90%',
+                end: 'top 65%',
                 scrub: 1,
                 toggleActions: 'play none none reverse',
             }
@@ -58,8 +63,8 @@ function Grid() {
             ease: "power2.out",
             scrollTrigger: {
                 trigger: '.grid-container',
-                start: 'top 75%',
-                end: 'top 35%',
+                start: 'top 85%',
+                end: 'top 45%',
                 scrub: 1.2,
                 toggleActions: 'play none none reverse',
             }
@@ -73,15 +78,17 @@ function Grid() {
             ease: "back.out(1.7)",
             scrollTrigger: {
                 trigger: '.grid-container',
-                start: 'top 70%',
-                end: 'top 30%',
+                start: 'top 80%',
+                end: 'top 40%',
                 scrub: 1.5,
                 toggleActions: 'play none none reverse',
             }
         });
 
-        // Refresh ScrollTrigger for mobile
-        ScrollTrigger.refresh();
+        // Refresh ScrollTrigger after setup
+        setTimeout(() => {
+            ScrollTrigger.refresh();
+        }, 100);
 
     }, { scope: containerRef });
 

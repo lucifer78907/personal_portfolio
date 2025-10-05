@@ -78,6 +78,11 @@ function Projects() {
     gsap.registerPlugin(ScrollTrigger, SplitText);
 
     useGSAP(() => {
+        // Set initial visibility
+        gsap.set(['.projects-heading', '.projects-subheading', '.project-card'], {
+            visibility: 'visible'
+        });
+
         // Heading animation
         const splitHeading = SplitText.create('.projects-heading', {
             type: 'chars',
@@ -90,8 +95,8 @@ function Projects() {
             ease: "power3.out",
             scrollTrigger: {
                 trigger: '.projects-heading',
-                start: 'top 80%',
-                end: 'top 50%',
+                start: 'top 90%',
+                end: 'top 60%',
                 scrub: 1,
                 toggleActions: 'play none none reverse',
             }
@@ -103,8 +108,8 @@ function Projects() {
             x: 50,
             scrollTrigger: {
                 trigger: '.projects-subheading',
-                start: 'top 80%',
-                end: 'top 60%',
+                start: 'top 90%',
+                end: 'top 70%',
                 scrub: 1,
                 toggleActions: 'play none none reverse',
             }
@@ -118,14 +123,17 @@ function Projects() {
             ease: "power2.out",
             scrollTrigger: {
                 trigger: '.projects-container',
-                start: 'top 70%',
-                end: 'top 30%',
+                start: 'top 80%',
+                end: 'top 40%',
                 scrub: 1.5,
                 toggleActions: 'play none none reverse',
             }
         });
 
-        ScrollTrigger.refresh();
+        // Refresh ScrollTrigger after setup
+        setTimeout(() => {
+            ScrollTrigger.refresh();
+        }, 100);
     }, { scope: containerRef });
 
     return (

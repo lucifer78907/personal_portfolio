@@ -72,6 +72,11 @@ const Skills = () => {
     };
 
     useGSAP(() => {
+        // Set initial visibility
+        gsap.set(['.skills-heading', '.skills-subheading', '.code-block', '.run-button'], {
+            visibility: 'visible'
+        });
+
         // Heading
         const splitHeading = SplitText.create('.skills-heading', {
             type: 'chars',
@@ -85,8 +90,8 @@ const Skills = () => {
             ease: "power3.out",
             scrollTrigger: {
                 trigger: '.skills-heading',
-                start: 'top 80%',
-                end: 'top 50%',
+                start: 'top 90%',
+                end: 'top 60%',
                 scrub: 1,
                 toggleActions: 'play none none reverse',
             }
@@ -98,8 +103,8 @@ const Skills = () => {
             x: 50,
             scrollTrigger: {
                 trigger: '.skills-subheading',
-                start: 'top 80%',
-                end: 'top 55%',
+                start: 'top 90%',
+                end: 'top 65%',
                 scrub: 1,
                 toggleActions: 'play none none reverse',
             }
@@ -113,8 +118,8 @@ const Skills = () => {
             stagger: 0.15,
             scrollTrigger: {
                 trigger: '.code-block',
-                start: 'top 80%',
-                end: 'top 45%',
+                start: 'top 90%',
+                end: 'top 55%',
                 scrub: 1.2,
                 toggleActions: 'play none none reverse',
             }
@@ -127,8 +132,8 @@ const Skills = () => {
             ease: "back.out(2)",
             scrollTrigger: {
                 trigger: '.run-button',
-                start: 'top 85%',
-                end: 'top 55%',
+                start: 'top 95%',
+                end: 'top 65%',
                 scrub: 1.2,
                 toggleActions: 'play none none reverse',
             }
@@ -143,8 +148,10 @@ const Skills = () => {
             ease: "sine.inOut",
         });
 
-        // Refresh ScrollTrigger for mobile
-        ScrollTrigger.refresh();
+        // Refresh ScrollTrigger after setup
+        setTimeout(() => {
+            ScrollTrigger.refresh();
+        }, 100);
 
     }, { scope: containerRef, dependencies: [clicked] });
 

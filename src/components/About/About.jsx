@@ -7,14 +7,19 @@ const About = () => {
     const containerRef = useRef();
 
     useGSAP(() => {
+        // Set initial visibility
+        gsap.set(['.about-heading', '.about-subheading', '.about-paragraph', '.about-highlight', '.dollar-sign'], {
+            visibility: 'visible'
+        });
+
         // Heading animation
         gsap.from('.about-heading', {
             opacity: 0,
             x: -50,
             scrollTrigger: {
                 trigger: '.about-heading',
-                start: 'top 80%',
-                end: 'top 50%',
+                start: 'top 90%',
+                end: 'top 60%',
                 scrub: 1,
                 toggleActions: 'play none none reverse',
             }
@@ -26,8 +31,8 @@ const About = () => {
             ease: "back.out(2)",
             scrollTrigger: {
                 trigger: '.about-heading',
-                start: 'top 75%',
-                end: 'top 50%',
+                start: 'top 85%',
+                end: 'top 60%',
                 scrub: 1.2,
                 toggleActions: 'play none none reverse',
             }
@@ -39,8 +44,8 @@ const About = () => {
             x: 50,
             scrollTrigger: {
                 trigger: '.about-subheading',
-                start: 'top 80%',
-                end: 'top 55%',
+                start: 'top 90%',
+                end: 'top 65%',
                 scrub: 1,
                 toggleActions: 'play none none reverse',
             }
@@ -61,8 +66,8 @@ const About = () => {
                 ease: "power2.out",
                 scrollTrigger: {
                     trigger: para,
-                    start: 'top 80%',
-                    end: 'top 45%',
+                    start: 'top 90%',
+                    end: 'top 55%',
                     scrub: 1.2,
                     toggleActions: 'play none none reverse',
                 }
@@ -77,15 +82,17 @@ const About = () => {
             ease: "back.out(2)",
             scrollTrigger: {
                 trigger: '.about-content',
-                start: 'top 75%',
-                end: 'top 40%',
+                start: 'top 85%',
+                end: 'top 50%',
                 scrub: 1.3,
                 toggleActions: 'play none none reverse',
             }
         });
 
-        // Refresh ScrollTrigger for mobile
-        ScrollTrigger.refresh();
+        // Refresh ScrollTrigger after setup
+        setTimeout(() => {
+            ScrollTrigger.refresh();
+        }, 100);
 
     }, { scope: containerRef });
 

@@ -198,6 +198,11 @@ function Gallery() {
     };
 
     useGSAP(() => {
+        // Set initial visibility
+        gsap.set(['.gallery-heading', '.gallery-subheading', '.gallery-image'], {
+            visibility: 'visible'
+        });
+
         // Heading animation
         const splitHeading = SplitText.create('.gallery-heading', {
             type: 'words',
@@ -210,8 +215,8 @@ function Gallery() {
             ease: "power3.out",
             scrollTrigger: {
                 trigger: '.gallery-heading',
-                start: 'top 80%',
-                end: 'top 50%',
+                start: 'top 90%',
+                end: 'top 60%',
                 scrub: 1,
                 toggleActions: 'play none none reverse',
             }
@@ -223,8 +228,8 @@ function Gallery() {
             x: 50,
             scrollTrigger: {
                 trigger: '.gallery-subheading',
-                start: 'top 80%',
-                end: 'top 55%',
+                start: 'top 90%',
+                end: 'top 65%',
                 scrub: 1,
                 toggleActions: 'play none none reverse',
             }
@@ -245,14 +250,17 @@ function Gallery() {
             ease: "back.out(1.4)",
             scrollTrigger: {
                 trigger: '.gallery-grid',
-                start: 'top 75%',
-                end: 'top 25%',
+                start: 'top 85%',
+                end: 'top 35%',
                 scrub: 1.5,
                 toggleActions: 'play none none reverse',
             }
         });
 
-        ScrollTrigger.refresh();
+        // Refresh ScrollTrigger after setup
+        setTimeout(() => {
+            ScrollTrigger.refresh();
+        }, 100);
     }, { scope: containerRef, dependencies: [selectedImage] });
 
     return (

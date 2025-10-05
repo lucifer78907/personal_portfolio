@@ -13,7 +13,7 @@ const Experience = () => {
         {
             company: 'Initializ.ai',
             role: 'SDE - 2',
-            period: 'May 2024 - Present',
+            period: 'June 2024 - Present',
             description: 'Building enterprise GenAI platform dashboards with agentic workflows and RAG systems. Developing scalable AI application deployment solutions with GPU optimization and serverless inferencing.',
             color: '#9333ea', // purple-600
             icon: '🤖'
@@ -21,7 +21,7 @@ const Experience = () => {
         {
             company: 'Coalmantra',
             role: 'Software Developer',
-            period: 'March 2024 - May 2024',
+            period: 'March 2024 - May 2025',
             description: 'Developed full-stack web applications using React and Node.js. Implemented responsive UI components and RESTful APIs for client projects.',
             color: '#d97706', // amber-600
             icon: '💻'
@@ -29,6 +29,11 @@ const Experience = () => {
     ];
 
     useGSAP(() => {
+        // Set initial visibility
+        gsap.set(['.experience-heading', '.experience-subheading', '.experience-card', '.timeline-dot'], {
+            visibility: 'visible'
+        });
+
         // Heading animation
         const splitHeading = SplitText.create('.experience-heading', {
             type: 'chars',
@@ -41,8 +46,8 @@ const Experience = () => {
             ease: "power3.out",
             scrollTrigger: {
                 trigger: '.experience-heading',
-                start: 'top 80%',
-                end: 'top 50%',
+                start: 'top 90%',
+                end: 'top 60%',
                 scrub: 1,
                 toggleActions: 'play none none reverse',
             }
@@ -54,8 +59,8 @@ const Experience = () => {
             x: 50,
             scrollTrigger: {
                 trigger: '.experience-subheading',
-                start: 'top 80%',
-                end: 'top 60%',
+                start: 'top 90%',
+                end: 'top 70%',
                 scrub: 1,
                 toggleActions: 'play none none reverse',
             }
@@ -63,24 +68,26 @@ const Experience = () => {
 
         // Animate SVG path drawing
         const path = pathRef.current;
-        const pathLength = path.getTotalLength();
+        if (path) {
+            const pathLength = path.getTotalLength();
 
-        gsap.set(path, {
-            strokeDasharray: pathLength,
-            strokeDashoffset: pathLength,
-        });
+            gsap.set(path, {
+                strokeDasharray: pathLength,
+                strokeDashoffset: pathLength,
+            });
 
-        gsap.to(path, {
-            strokeDashoffset: 0,
-            ease: "none",
-            scrollTrigger: {
-                trigger: '.experience-timeline',
-                start: 'top 70%',
-                end: 'bottom 30%',
-                scrub: 1.5,
-                toggleActions: 'play none none reverse',
-            }
-        });
+            gsap.to(path, {
+                strokeDashoffset: 0,
+                ease: "none",
+                scrollTrigger: {
+                    trigger: '.experience-timeline',
+                    start: 'top 80%',
+                    end: 'bottom 40%',
+                    scrub: 1.5,
+                    toggleActions: 'play none none reverse',
+                }
+            });
+        }
 
         // Animate experience cards
         gsap.utils.toArray('.experience-card').forEach((card, index) => {
@@ -90,8 +97,8 @@ const Experience = () => {
                 scale: 0.9,
                 scrollTrigger: {
                     trigger: card,
-                    start: 'top 75%',
-                    end: 'top 45%',
+                    start: 'top 95%',
+                    end: 'top 60%',
                     scrub: 1.2,
                     toggleActions: 'play none none reverse',
                 }
@@ -104,15 +111,18 @@ const Experience = () => {
                 ease: "back.out(2)",
                 scrollTrigger: {
                     trigger: card,
-                    start: 'top 70%',
-                    end: 'top 50%',
+                    start: 'top 90%',
+                    end: 'top 65%',
                     scrub: 1,
                     toggleActions: 'play none none reverse',
                 }
             });
         });
 
-        ScrollTrigger.refresh();
+        // Refresh ScrollTrigger after setup
+        setTimeout(() => {
+            ScrollTrigger.refresh();
+        }, 100);
     }, { scope: containerRef });
 
     return (
@@ -156,9 +166,8 @@ const Experience = () => {
                     {experiences.map((exp, index) => (
                         <div
                             key={index}
-                            className={`experience-card flex items-center gap-6 md:gap-12 ${
-                                index % 2 === 0 ? 'md:flex-row' : 'md:flex-row-reverse'
-                            }`}
+                            className={`experience-card flex items-center gap-6 md:gap-12 ${index % 2 === 0 ? 'md:flex-row' : 'md:flex-row-reverse'
+                                }`}
                         >
                             {/* Timeline dot/icon */}
                             <div className='timeline-dot relative flex-shrink-0 md:absolute md:left-1/2 md:-translate-x-1/2'>
