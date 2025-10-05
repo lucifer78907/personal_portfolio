@@ -16,6 +16,7 @@ const About = () => {
                 start: 'top 80%',
                 end: 'top 50%',
                 scrub: 1,
+                toggleActions: 'play none none reverse',
             }
         });
 
@@ -28,6 +29,7 @@ const About = () => {
                 start: 'top 75%',
                 end: 'top 50%',
                 scrub: 1.2,
+                toggleActions: 'play none none reverse',
             }
         });
 
@@ -40,6 +42,7 @@ const About = () => {
                 start: 'top 80%',
                 end: 'top 55%',
                 scrub: 1,
+                toggleActions: 'play none none reverse',
             }
         });
 
@@ -61,6 +64,7 @@ const About = () => {
                     start: 'top 80%',
                     end: 'top 45%',
                     scrub: 1.2,
+                    toggleActions: 'play none none reverse',
                 }
             });
         });
@@ -76,8 +80,12 @@ const About = () => {
                 start: 'top 75%',
                 end: 'top 40%',
                 scrub: 1.3,
+                toggleActions: 'play none none reverse',
             }
         });
+
+        // Refresh ScrollTrigger for mobile
+        ScrollTrigger.refresh();
 
     }, { scope: containerRef });
 

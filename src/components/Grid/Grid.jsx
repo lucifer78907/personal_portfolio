@@ -30,6 +30,7 @@ function Grid() {
                 start: 'top 80%',
                 end: 'top 50%',
                 scrub: 1,
+                toggleActions: 'play none none reverse',
             }
         });
 
@@ -44,6 +45,7 @@ function Grid() {
                 start: 'top 80%',
                 end: 'top 55%',
                 scrub: 1,
+                toggleActions: 'play none none reverse',
             }
         });
 
@@ -59,6 +61,7 @@ function Grid() {
                 start: 'top 75%',
                 end: 'top 35%',
                 scrub: 1.2,
+                toggleActions: 'play none none reverse',
             }
         });
 
@@ -73,8 +76,12 @@ function Grid() {
                 start: 'top 70%',
                 end: 'top 30%',
                 scrub: 1.5,
+                toggleActions: 'play none none reverse',
             }
         });
+
+        // Refresh ScrollTrigger for mobile
+        ScrollTrigger.refresh();
 
     }, { scope: containerRef });
 

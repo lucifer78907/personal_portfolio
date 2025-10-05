@@ -66,7 +66,7 @@ const Hero = ({ addAnimation, index }) => {
         }, "-=0.3")
 
         setTotalTime(tl.totalDuration());
-        addAnimation(tl, "+=0.1");
+        addAnimation(tl, "-=0.2");
 
 
 

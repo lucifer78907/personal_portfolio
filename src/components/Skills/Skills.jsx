@@ -39,6 +39,7 @@ const Skills = () => {
                 start: 'top 80%',
                 end: 'top 50%',
                 scrub: 1,
+                toggleActions: 'play none none reverse',
             }
         });
 
@@ -51,6 +52,7 @@ const Skills = () => {
                 start: 'top 80%',
                 end: 'top 55%',
                 scrub: 1,
+                toggleActions: 'play none none reverse',
             }
         });
 
@@ -65,6 +67,7 @@ const Skills = () => {
                 start: 'top 80%',
                 end: 'top 45%',
                 scrub: 1.2,
+                toggleActions: 'play none none reverse',
             }
         });
 
@@ -78,6 +81,7 @@ const Skills = () => {
                 start: 'top 85%',
                 end: 'top 55%',
                 scrub: 1.2,
+                toggleActions: 'play none none reverse',
             }
         });
 
@@ -89,6 +93,9 @@ const Skills = () => {
             duration: 0.8,
             ease: "sine.inOut",
         });
+
+        // Refresh ScrollTrigger for mobile
+        ScrollTrigger.refresh();
 
     }, { scope: containerRef, dependencies: [clicked] });
 
