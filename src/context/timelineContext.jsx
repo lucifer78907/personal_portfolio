@@ -1,6 +1,6 @@
 import { useState, useCallback, createContext } from 'react';
-import { useGSAP } from '@gsap/react';
 import gsap from 'gsap';
+import GSDevTools from "gsap/GSDevTools";
 
 const timelineContext = createContext({
     tl: null,
@@ -10,7 +10,9 @@ const timelineContext = createContext({
 
 
 export const TimelineContextProvider = ({ children }) => {
+    gsap.registerPlugin(GSDevTools);
     const [tl, setTl] = useState(gsap.timeline());
+    GSDevTools.create({ animation: tl });
 
 
     const addAnimation = useCallback((animation, index) => {

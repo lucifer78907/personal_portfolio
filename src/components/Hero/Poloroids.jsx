@@ -10,19 +10,26 @@ import { MdOutlineSwipe } from 'react-icons/md'
 import { ScrollTrigger } from 'gsap/all'
 import { useGSAP } from '@gsap/react'
 import gsap from 'gsap'
+import { useContext } from 'react'
+import timelineContext from '../../context/timelineContext'
 
-const Poloroids = () => {
+const Poloroids = ({ delay }) => {
+    const { addAnimation } = useContext(timelineContext)
 
     useGSAP(() => {
-        gsap.from('.container', { xPercent: 100, opacity: 0, duration: 3, ease: 'expo.out' })
+        const ani = gsap.timeline().from('.container', { xPercent: 100, opacity: 0, duration: 3, ease: 'expo.out' })
+
+        addAnimation(ani, "+=2")
     })
 
     return (
         <aside className='container -mt-4 max-w-sm h-full md:max-w-md xl:w-full sm:mx-auto relative'>
             <Swiper
                 effect={'cards'}
-                onInit={() => {
+                onInit={(swiper) => {
                     ScrollTrigger.refresh(); console.log("RENDERED")
+                    swiper.autoplay.stop();
+                    setTimeout(() => swiper.autoplay.start(), 7000)
                 }}
                 onSlideChange={(swiper) => {
                     if (swiper.realIndex === 0 && swiper.autoplay.running) {
@@ -33,7 +40,7 @@ const Poloroids = () => {
                 grabCursor={true}
                 modules={[EffectCards, Autoplay]}
                 autoplay={{
-                    delay: 4500, // Change slide every 2 seconds
+                    delay: 2000, // Change slide every 2 seconds
                     disableOnInteraction: true, // Continue autoplay even after user interaction
                 }}
                 cardsEffect={

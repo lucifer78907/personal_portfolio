@@ -69,11 +69,12 @@ const HeroLoader = ({ addAnimation, index }) => {
 export default HeroLoader;
 
 export const LoadingBars = () => {
-    const total = 12;
+    const total = window.innerWidth > 768 ? 12 : 6;
+    const width = total === 12 ? 'w-[15vw]' : 'w-[20vw]'
     const bars = [];
 
     for (let i = 0; i < total; i++) {
-        bars.push(<div key={i} className="hero__bar w-[15vw] h-[105vh] bg-amber-800"></div>);
+        bars.push(<div key={i} className={`hero__bar ${width} h-[105vh] bg-amber-800`}></div>);
     }
 
     return <>{bars}</>;

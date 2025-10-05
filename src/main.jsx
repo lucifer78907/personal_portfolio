@@ -9,10 +9,8 @@ import { TimelineContextProvider } from './context/timelineContext.jsx';
 
 createRoot(document.getElementById('root')).render(
   <SmoothScroll>
-    <StrictMode>
-      <TimelineContextProvider>
-        <App />
-      </TimelineContextProvider>
-    </StrictMode>
+    <TimelineContextProvider>
+      <App />
+    </TimelineContextProvider>
   </SmoothScroll>
 )

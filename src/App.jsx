@@ -14,6 +14,7 @@ export default function App() {
   // gsap dependencies
   gsap.registerPlugin(SplitText);
   gsap.registerPlugin(ScrollTrigger);
+
   const router = createBrowserRouter(
     [
       {
