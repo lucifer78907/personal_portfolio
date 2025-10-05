@@ -1,9 +1,12 @@
-import React from 'react'
-import { DiMongodb } from 'react-icons/di'
-import { FaAws, FaCss3, FaDocker, FaExternalLinkAlt, FaGithub, FaHtml5, FaNode, FaReact, FaSass } from 'react-icons/fa'
-import { IoLogoFirebase } from 'react-icons/io5'
-import { RiGitRepositoryPrivateFill, RiNextjsFill, RiTailwindCssFill } from 'react-icons/ri'
-import { SiExpress, SiGreensock, SiJavascript, SiNetlify, SiReactrouter, SiSwiper, SiTypescript } from 'react-icons/si'
+import { useRef } from 'react';
+import { useGSAP } from '@gsap/react';
+import gsap from 'gsap';
+import { ScrollTrigger, SplitText } from 'gsap/all';
+import { DiMongodb } from 'react-icons/di';
+import { FaAws, FaCss3, FaDocker, FaExternalLinkAlt, FaGithub, FaHtml5, FaNode, FaReact, FaSass } from 'react-icons/fa';
+import { IoLogoFirebase } from 'react-icons/io5';
+import { RiGitRepositoryPrivateFill, RiNextjsFill, RiTailwindCssFill } from 'react-icons/ri';
+import { SiExpress, SiGreensock, SiJavascript, SiNetlify, SiReactrouter, SiSwiper, SiTypescript } from 'react-icons/si';
 
 const projects = [
     {
@@ -50,53 +53,150 @@ const projects = [
         liveLink: 'https://omnifood-rudra-website.netlify.app/',
         techStackIcons: [FaHtml5, FaCss3, SiJavascript, SiNetlify]
     },
-
-]
+];
 
 function Projects() {
+    const containerRef = useRef();
+
+    gsap.registerPlugin(ScrollTrigger, SplitText);
+
+    useGSAP(() => {
+        // Heading animation
+        const splitHeading = SplitText.create('.projects-heading', {
+            type: 'chars',
+        });
+
+        gsap.from(splitHeading.chars, {
+            yPercent: 100,
+            opacity: 0,
+            stagger: 0.02,
+            ease: "power3.out",
+            scrollTrigger: {
+                trigger: '.projects-heading',
+                start: 'top 80%',
+                end: 'top 50%',
+                scrub: 1,
+                toggleActions: 'play none none reverse',
+            }
+        });
+
+        // Subheading
+        gsap.from('.projects-subheading', {
+            opacity: 0,
+            x: 50,
+            scrollTrigger: {
+                trigger: '.projects-subheading',
+                start: 'top 80%',
+                end: 'top 60%',
+                scrub: 1,
+                toggleActions: 'play none none reverse',
+            }
+        });
+
+        // Project cards stagger
+        gsap.from('.project-card', {
+            opacity: 0,
+            y: 60,
+            stagger: 0.2,
+            ease: "power2.out",
+            scrollTrigger: {
+                trigger: '.projects-container',
+                start: 'top 70%',
+                end: 'top 30%',
+                scrub: 1.5,
+                toggleActions: 'play none none reverse',
+            }
+        });
+
+        ScrollTrigger.refresh();
+    }, { scope: containerRef });
+
     return (
-        <section className='p-6 2xl:w-3/4 2xl:mx-auto'>
-            <header>
-                <h2 className='font-lexend text-6xl md:text-7xl font-semibold tracking-tighter text-amber-950'>Projects</h2>
-                <p className='tracking-tighter mt-1 font-lexend sm:text-base lg:text-lg text-right font-medium text-sm text-amber-700/50'>Talk's cheap! Show me the code</p>
+        <section ref={containerRef} className='p-6 py-20 2xl:w-3/4 2xl:mx-auto'>
+            <header className='mb-12'>
+                <h2 className='projects-heading font-lexend text-5xl sm:text-6xl md:text-7xl font-semibold tracking-tighter text-amber-950 overflow-hidden'>
+                    Projects
+                </h2>
+                <p className='projects-subheading tracking-tighter mt-2 font-lexend sm:text-base lg:text-xl text-right font-medium text-sm text-amber-700/60'>
+                    Talk's cheap! Show me the code
+                </p>
             </header>
-            <main className='mt-4 flex  gap-4 flex-col sm:gap-8'>
+            <main className='projects-container flex gap-6 flex-col sm:gap-8'>
                 {projects.map((project) => {
                     return <ProjectCard key={project.id} {...project} />
                 })}
-
             </main>
         </section>
-    )
+    );
 }
 
-export default Projects
+export default Projects;
 
 export const ProjectCard = ({ title, githubLink, liveLink, description, techStackIcons }) => {
-    return <article className='p-6 shadow-md rounded-xl'>
-        <header>
-            <h2 className='text-base sm:text-xl md:text-2xl xl:text-3xl font-lexend flex justify-between items-center text-amber-800 font-semibold'>{title}
-                <span className='text-xs sm:text-base xl:text-lg flex  gap-2'>
-                    {githubLink &&
-                        <a href={githubLink} target='_blank'><FaGithub size={'1.2em'} /></a>
-                    }
-                    {liveLink &&
-                        <a href={liveLink} target='_blank'><FaExternalLinkAlt size={'1.2em'} /></a>
-                    }
-                    {!githubLink && !liveLink && <p className='flex items-stretch  gap-1'><RiGitRepositoryPrivateFill className='mt-1' /> Private repo</p>}
-                </span>
-            </h2>
-            <p className='mt-1 text-xs sm:text-base xl:hidden xl:text-lg sm:mt-2 text-neutral-800'>{description.length > 100 ? `${description.slice(0, 100)} ...` : description}</p>
-            <p className='hidden xl:block mt-1 text-lg sm:mt-2 text-neutral-800'>{description}</p>
-        </header>
-        <main className='mt-3'>
-            <p className='text-xs sm:text-base xl:text-lg font-medium text-amber-700 flex items-center gap-2'>Tech stack -
-                <span className='flex flex-1 items-center justify-around'>
-                    {techStackIcons.map((IconComponent, index) => (
-                        <IconComponent key={index} size="1.4em" />
-                    ))}
-                </span>
-            </p>
-        </main>
-    </article>
-}
+    return (
+        <article className='project-card group p-6 sm:p-8 bg-gradient-to-br from-amber-50/30 to-amber-100/20 backdrop-blur-sm shadow-lg hover:shadow-2xl rounded-2xl border border-amber-200/30 transition-all duration-500 hover:scale-[1.02] hover:-translate-y-1'>
+            <header>
+                <h2 className='text-lg sm:text-2xl md:text-3xl xl:text-4xl font-lexend flex justify-between items-start gap-4 text-amber-900 font-bold mb-3'>
+                    <span className='flex-1 group-hover:text-amber-800 transition-colors duration-300'>{title}</span>
+                    <span className='text-base sm:text-xl xl:text-2xl flex gap-3 text-amber-700'>
+                        {githubLink && (
+                            <a
+                                href={githubLink}
+                                target='_blank'
+                                rel='noopener noreferrer'
+                                className='hover:text-amber-900 transition-all duration-300 hover:scale-110 active:scale-95'
+                                aria-label='GitHub Repository'
+                            >
+                                <FaGithub size={'1em'} />
+                            </a>
+                        )}
+                        {liveLink && (
+                            <a
+                                href={liveLink}
+                                target='_blank'
+                                rel='noopener noreferrer'
+                                className='hover:text-amber-900 transition-all duration-300 hover:scale-110 active:scale-95'
+                                aria-label='Live Demo'
+                            >
+                                <FaExternalLinkAlt size={'0.9em'} />
+                            </a>
+                        )}
+                        {!githubLink && !liveLink && (
+                            <p className='flex items-center gap-2 text-sm sm:text-base text-amber-600'>
+                                <RiGitRepositoryPrivateFill />
+                                <span className='hidden sm:inline'>Private</span>
+                            </p>
+                        )}
+                    </span>
+                </h2>
+                <p className='text-sm sm:text-base xl:text-lg leading-relaxed text-amber-950/80 font-lexend'>
+                    {description}
+                </p>
+            </header>
+            <main className='mt-6'>
+                <div className='flex items-center gap-3 flex-wrap'>
+                    <p className='text-xs sm:text-sm xl:text-base font-semibold text-amber-800 font-lexend'>
+                        Tech Stack
+                    </p>
+                    <div className='flex flex-1 items-center justify-end gap-3 sm:gap-4 flex-wrap'>
+                        {techStackIcons.map((IconComponent, index) => (
+                            <span
+                                key={index}
+                                className='text-amber-700 hover:text-amber-900 transition-all duration-300 hover:scale-125 cursor-default'
+                                style={{
+                                    animation: `float 3s ease-in-out infinite`,
+                                    animationDelay: `${index * 0.2}s`
+                                }}
+                            >
+                                <IconComponent size="1.5em" className='sm:text-2xl' />
+                            </span>
+                        ))}
+                    </div>
+                </div>
+            </main>
+
+            {/* Decorative gradient line */}
+            <div className='mt-6 h-1 w-0 group-hover:w-full bg-gradient-to-r from-amber-600 via-amber-500 to-amber-400 rounded-full transition-all duration-700 ease-out'></div>
+        </article>
+    );
+};
