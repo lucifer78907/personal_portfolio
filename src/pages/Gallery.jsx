@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useRef, useState, useLayoutEffect } from 'react';
 import { useGSAP } from '@gsap/react';
 import gsap from 'gsap';
 import { SplitText, Flip, ScrollTrigger } from 'gsap/all';
@@ -59,155 +59,185 @@ function Gallery() {
         { img: img23, title: "Final Frame", desc: "Every ending is a new beginning" },
     ];
 
+    // Cylinder Rotation Logic
+    const cylinderRef = useRef(null);
+    const rotationRef = useRef(0);
+    const isDragging = useRef(false);
+    const startX = useRef(0);
+    const lastX = useRef(0);
+    const [radius, setRadius] = useState(1000);
+    const dragStartTime = useRef(0);
+
+    useLayoutEffect(() => {
+        if (selectedImage !== null && cylinderRef.current) {
+            const count = galleryData.length;
+            // Calculate radius to prevent overlap: (Width + Gap) / (2 * tan(PI / Count))
+            // Assuming width roughly 400px (md) or 300px (sm) + gap
+            const cardWidth = window.innerWidth < 768 ? 300 : 400;
+            const gap = 40;
+            const calculatedRadius = Math.round(((cardWidth + gap) * count) / (2 * Math.PI));
+            setRadius(calculatedRadius);
+
+            const angle = 360 / count;
+            const initialRotation = -selectedImage * angle;
+            rotationRef.current = initialRotation;
+
+            // Optimize: Set initial state immediately to avoid layout thrashing
+            gsap.set(cylinderRef.current, {
+                z: -calculatedRadius,
+                rotationY: initialRotation,
+                opacity: 0,
+                scale: 0.8 // Start slightly smaller
+            });
+
+            // Smoother entrance animation
+            gsap.to(cylinderRef.current, {
+                opacity: 1,
+                scale: 1,
+                duration: 0.8,
+                ease: "power3.out",
+                onStart: () => {
+                    updateActiveItems(initialRotation, count, angle);
+                }
+            });
+
+            // Keyboard Navigation
+            const handleKeyDown = (e) => {
+                if (e.key === 'ArrowLeft') {
+                    rotateCylinder('left');
+                } else if (e.key === 'ArrowRight') {
+                    rotateCylinder('right');
+                } else if (e.key === 'Escape') {
+                    setSelectedImage(null);
+                }
+            };
+
+            window.addEventListener('keydown', handleKeyDown);
+            return () => window.removeEventListener('keydown', handleKeyDown);
+        }
+    }, [selectedImage]);
+
+    const rotateCylinder = (direction) => {
+        const count = galleryData.length;
+        const angle = 360 / count;
+        const currentRot = rotationRef.current;
+
+        // Calculate nearest snap point
+        const snappedRot = Math.round(currentRot / angle) * angle;
+
+        // Determine target rotation
+        const targetRot = direction === 'left' ? snappedRot + angle : snappedRot - angle;
+
+        animateRotation(targetRot);
+    };
+
+    const animateRotation = (targetRot) => {
+        const count = galleryData.length;
+        const angle = 360 / count;
+
+        gsap.to(cylinderRef.current, {
+            rotationY: targetRot,
+            duration: 0.6,
+            ease: "power2.out",
+            onUpdate: function () {
+                const currentRot = gsap.getProperty(this.targets()[0], "rotationY");
+                this.targets()[0].style.transform = `translateZ(${-radius}px) rotateY(${currentRot}deg)`;
+                updateActiveItems(currentRot, count, angle);
+                rotationRef.current = currentRot;
+            }
+        });
+    };
+
+    const updateActiveItems = (rotation, count, angle) => {
+        // Normalize rotation
+        let normalizedRot = rotation % 360;
+        if (normalizedRot > 0) normalizedRot -= 360;
+
+
+        const exactIndex = -normalizedRot / angle;
+
+        const items = document.querySelectorAll('.cylinder-item');
+        items.forEach((item, i) => {
+            let dist = Math.abs(i - exactIndex);
+            if (dist > count / 2) dist = count - dist;
+
+            // Simplify: Only adjust opacity and pointer-events
+            // Removed scale and transform updates to prevent layout instability
+            if (dist < 5) {
+                const opacity = 1 - (dist / 5);
+                item.style.opacity = Math.max(0.1, opacity); // Keep slightly visible for context
+                item.style.filter = `blur(${dist * 3}px) brightness(${1 - dist * 0.1})`;
+                item.style.pointerEvents = dist < 0.5 ? 'auto' : 'none';
+            } else {
+                item.style.opacity = 0;
+                item.style.pointerEvents = 'none';
+            }
+        });
+    };
+
+    const handleDragStart = (e) => {
+        isDragging.current = true;
+        startX.current = e.clientX || e.touches[0].clientX;
+        lastX.current = startX.current;
+        dragStartTime.current = Date.now();
+        if (cylinderRef.current) {
+            gsap.killTweensOf(cylinderRef.current);
+        }
+    };
+
+    const handleDragMove = (e) => {
+        if (!isDragging.current) return;
+        const clientX = e.clientX || e.touches[0].clientX;
+        const diff = clientX - lastX.current;
+
+        const degChange = (diff / radius) * (180 / Math.PI) * 1.5;
+        rotationRef.current += degChange;
+
+        if (cylinderRef.current) {
+            cylinderRef.current.style.transform = `translateZ(${-radius}px) rotateY(${rotationRef.current}deg)`;
+        }
+
+        const count = galleryData.length;
+        const angle = 360 / count;
+        updateActiveItems(rotationRef.current, count, angle);
+
+        lastX.current = clientX;
+    };
+
+    const handleDragEnd = (e) => {
+        if (!isDragging.current) return;
+        isDragging.current = false;
+
+        const count = galleryData.length;
+        const angle = 360 / count;
+        const snappedRotation = Math.round(rotationRef.current / angle) * angle;
+
+        animateRotation(snappedRotation);
+    };
+
+    // Capture click on items to prevent it if it was a drag
+    const handleItemClick = (e, index) => {
+        // If we are in 3D mode, clicking an item might mean "center this item"
+        // But for now, let's just ensure drag doesn't trigger this if we add click handlers later
+        e.stopPropagation();
+        // Logic to center clicked item if it's not centered?
+        // For now, just do nothing or maybe log
+    };
+
     // Register GSAP plugins
     gsap.registerPlugin(Flip, ScrollTrigger);
 
     const handleImageClick = (index) => {
-        const clickedImg = document.querySelector(`[data-index="${index}"]`);
-
-        // Get the state before changes
-        const state = Flip.getState(clickedImg);
-
-        // Update state
         setSelectedImage(index);
-
-        // Wait for DOM update then animate with Flip
-        requestAnimationFrame(() => {
-            const fullscreenImg = document.querySelector('.fullscreen-image');
-            if (fullscreenImg) {
-                Flip.from(state, {
-                    duration: 0.8,
-                    ease: "power3.inOut",
-                    absolute: true,
-                    onStart: () => {
-                        gsap.set('.fullscreen-overlay', { display: 'flex' });
-                    }
-                });
-
-                // Animate overlay and content
-                gsap.from('.fullscreen-overlay', {
-                    opacity: 0,
-                    duration: 0.5,
-                });
-
-                gsap.from('.image-info', {
-                    opacity: 0,
-                    y: 30,
-                    duration: 0.6,
-                    delay: 0.4,
-                    ease: "power2.out"
-                });
-            }
-        });
     };
 
     const handleClose = () => {
-        const fullscreenImg = document.querySelector('.fullscreen-image');
-        const originalImg = document.querySelector(`[data-index="${selectedImage}"]`);
-
-        if (fullscreenImg && originalImg) {
-            const state = Flip.getState(fullscreenImg);
-
-            // Fade out overlay content
-            gsap.to(['.image-info', '.close-button'], {
-                opacity: 0,
-                duration: 0.2,
-            });
-
-            gsap.to('.fullscreen-overlay', {
-                opacity: 0,
-                duration: 0.3,
-                delay: 0.2,
-            });
-
-            // Flip back to original position
-            setTimeout(() => {
-                setSelectedImage(null);
-                requestAnimationFrame(() => {
-                    if (originalImg) {
-                        Flip.from(state, {
-                            duration: 0.7,
-                            ease: "power3.inOut",
-                            absolute: true,
-                            onComplete: () => {
-                                gsap.set('.fullscreen-overlay', { display: 'none' });
-                            }
-                        });
-                    }
-                });
-            }, 300);
-        }
-    };
-
-    const navigate = (direction) => {
-        const newIndex = direction === 'next'
-            ? (selectedImage + 1) % galleryData.length
-            : (selectedImage - 1 + galleryData.length) % galleryData.length;
-
-        const slideDirection = direction === 'next' ? -100 : 100;
-
-        gsap.to('.fullscreen-image', {
-            x: -slideDirection,
-            opacity: 0,
-            duration: 0.3,
-            ease: "power2.in",
-            onComplete: () => {
-                setSelectedImage(newIndex);
-                gsap.fromTo('.fullscreen-image',
-                    { x: slideDirection, opacity: 0 },
-                    { x: 0, opacity: 1, duration: 0.4, ease: "power2.out" }
-                );
-                gsap.fromTo('.image-info',
-                    { opacity: 0, y: 20 },
-                    { opacity: 1, y: 0, duration: 0.4, delay: 0.1 }
-                );
-            }
-        });
-
-        gsap.to('.image-info', {
-            opacity: 0,
-            y: -20,
-            duration: 0.2
-        });
-    };
-
-    const handleTouchStart = (e) => {
-        touchStartX.current = e.touches[0].clientX;
-    };
-
-    const handleTouchMove = (e) => {
-        touchEndX.current = e.touches[0].clientX;
-    };
-
-    const handleTouchEnd = () => {
-        const swipeThreshold = 50;
-        const diff = touchStartX.current - touchEndX.current;
-
-        if (Math.abs(diff) > swipeThreshold) {
-            if (diff > 0) {
-                // Swiped left - next image
-                navigate('next');
-            } else {
-                // Swiped right - previous image
-                navigate('prev');
-            }
-        }
-
-        touchStartX.current = 0;
-        touchEndX.current = 0;
+        setSelectedImage(null);
     };
 
     useGSAP(() => {
-        // Set initial visibility
-        gsap.set(['.gallery-heading', '.gallery-subheading', '.gallery-image'], {
-            visibility: 'visible'
-        });
-
         // Heading animation
-        const splitHeading = SplitText.create('.gallery-heading', {
-            type: 'words',
-        });
-
+        const splitHeading = new SplitText('.gallery-heading', { type: 'words' });
         gsap.from(splitHeading.words, {
             opacity: 0,
             y: 50,
@@ -218,121 +248,122 @@ function Gallery() {
                 start: 'top 90%',
                 end: 'top 60%',
                 scrub: 1,
-                toggleActions: 'play none none reverse',
             }
         });
 
-        // Subheading
-        gsap.from('.gallery-subheading', {
-            opacity: 0,
-            x: 50,
-            scrollTrigger: {
-                trigger: '.gallery-subheading',
-                start: 'top 90%',
-                end: 'top 65%',
-                scrub: 1,
-                toggleActions: 'play none none reverse',
-            }
+        // Masonry/Scatter Layout Animation
+        // We'll use column-count in CSS for masonry, but animate items individually
+        const items = gsap.utils.toArray('.gallery-image-wrapper');
+
+        items.forEach((item, i) => {
+            gsap.from(item, {
+                y: 100,
+                opacity: 0,
+                scale: 0.8,
+                rotation: Math.random() * 10 - 5, // Random rotation for scatter effect
+                duration: 1,
+                ease: "power3.out",
+                scrollTrigger: {
+                    trigger: item,
+                    start: "top 90%",
+                    end: "top 70%",
+                    scrub: 1,
+                }
+            });
         });
 
-        // Stagger grid images with modern entrance
-        const galleryImages = gsap.utils.toArray('.gallery-image');
-
-        gsap.from(galleryImages, {
-            opacity: 0,
-            scale: 0.8,
-            y: 60,
-            stagger: {
-                each: 0.05,
-                from: "start",
-                grid: "auto"
-            },
-            ease: "back.out(1.4)",
-            scrollTrigger: {
-                trigger: '.gallery-grid',
-                start: 'top 85%',
-                end: 'top 35%',
-                scrub: 1.5,
-                toggleActions: 'play none none reverse',
-            }
-        });
-
-        // Refresh ScrollTrigger after setup
-        setTimeout(() => {
-            ScrollTrigger.refresh();
-        }, 100);
-    }, { scope: containerRef, dependencies: [selectedImage] });
+    }, { scope: containerRef });
 
     return (
-        <section ref={containerRef} className='p-4 py-20 relative'>
-            <header>
-                <h2 className='gallery-heading font-lexend text-4xl sm:text-5xl md:text-7xl font-semibold tracking-tighter text-amber-950'>
-                    Life through lens...
+        <section ref={containerRef} className='p-4 py-20 relative min-h-screen'>
+            <header className="mb-20 px-4 md:px-10">
+                <h2 className='gallery-heading font-display text-6xl md:text-8xl font-bold tracking-tighter text-text-main'>
+                    Visual<br />Playground
                 </h2>
-                <p className='gallery-subheading tracking-tighter mt-1 font-lexend text-right xl:text-xl xl:mt-4 font-medium text-sm text-amber-700/50'>
-                    its just a normal smartphone camera
+                <p className='gallery-subheading mt-4 text-right text-text-muted text-xl font-light max-w-md ml-auto'>
+                    A collection of moments captured in time.
                 </p>
             </header>
 
-            <main className='gallery-grid mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4'>
+            <main className='columns-1 sm:columns-2 lg:columns-3 gap-8 px-4 md:px-10 space-y-8'>
                 {galleryData.map((item, index) => (
                     <div
                         key={index}
-                        className='gallery-image-wrapper relative overflow-hidden rounded-lg cursor-pointer group'
-                        onClick={() => handleImageClick(index)}
+                        className='gallery-image-wrapper break-inside-avoid relative overflow-hidden rounded-2xl cursor-pointer group mb-8'
+                        onClick={() => setSelectedImage(index)}
                     >
                         <img
                             data-index={index}
                             src={item.img}
                             loading='lazy'
-                            decoding='async'
                             alt={item.title}
-                            className='gallery-image w-full h-full object-cover transition-transform duration-300 group-hover:scale-110'
+                            className='w-full h-auto object-cover transition-transform duration-700 group-hover:scale-110'
                         />
-                        <div className='absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4'>
-                            <p className='text-amber-50 font-lexend font-semibold text-lg'>{item.title}</p>
+                        <div className='absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-6'>
+                            <p className='text-white font-display font-medium text-lg transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300'>{item.title}</p>
                         </div>
                     </div>
                 ))}
             </main>
 
-            {/* Fullscreen Modal */}
+            {/* 3D Cylinder Modal */}
             {selectedImage !== null && (
-                <div
-                    className='fullscreen-overlay fixed inset-0 bg-black/95 z-[200] hidden flex-col items-center justify-center p-4'
-                    onTouchStart={handleTouchStart}
-                    onTouchMove={handleTouchMove}
-                    onTouchEnd={handleTouchEnd}
-                >
-                    {/* Close Button */}
+                <div className='fullscreen-overlay fixed inset-0 bg-black/95 z-[200] flex flex-col items-center justify-center overflow-hidden perspective-1000'>
                     <button
-                        onClick={handleClose}
-                        className='close-button absolute top-4 right-4 md:top-8 md:right-8 bg-amber-800 hover:bg-amber-700 text-amber-50 p-3 rounded-full transition-colors z-10'
-                        aria-label='Close'
+                        onClick={() => setSelectedImage(null)}
+                        className='close-button absolute top-8 right-8 bg-white/10 text-white p-4 rounded-full hover:bg-white/20 transition-colors z-50 backdrop-blur-md'
                     >
-                        <IoClose size={28} />
+                        <IoClose size={24} />
                     </button>
 
-                    {/* Image Container */}
-                    <div className='flex flex-col items-center justify-center max-w-6xl w-full'>
-                        <img
-                            src={galleryData[selectedImage].img}
-                            alt={galleryData[selectedImage].title}
-                            className='fullscreen-image max-h-[70vh] max-w-full object-contain rounded-lg'
-                        />
+                    <div
+                        className='cylinder-container relative w-full h-full flex items-center justify-center preserve-3d cursor-grab active:cursor-grabbing'
+                        onMouseDown={handleDragStart}
+                        onMouseMove={handleDragMove}
+                        onMouseUp={handleDragEnd}
+                        onMouseLeave={handleDragEnd}
+                        onTouchStart={handleDragStart}
+                        onTouchMove={handleDragMove}
+                        onTouchEnd={handleDragEnd}
+                    >
+                        <div
+                            ref={cylinderRef}
+                            className='cylinder relative w-[300px] md:w-[400px] h-[200px] md:h-[300px] preserve-3d will-change-transform'
+                        >
+                            {galleryData.map((item, index) => {
+                                const count = galleryData.length;
+                                const angle = 360 / count;
+                                const rotation = angle * index;
 
-                        {/* Image Info */}
-                        <div className='image-info mt-6 text-center max-w-2xl'>
-                            <h3 className='font-lexend text-3xl md:text-4xl font-bold text-amber-200 mb-3'>
-                                {galleryData[selectedImage].title}
-                            </h3>
-                            <p className='font-lexend text-lg md:text-xl text-amber-100/80'>
-                                {galleryData[selectedImage].desc}
-                            </p>
-                            <p className='font-lexend text-sm text-amber-400 mt-4'>
-                                {selectedImage + 1} / {galleryData.length}
-                            </p>
+                                return (
+                                    <div
+                                        key={index}
+                                        className='cylinder-item absolute top-0 left-0 w-full h-full backface-hidden transition-opacity'
+                                        // We set initial transform here, but updateActiveItems will override it
+                                        // It's important for the initial render before JS kicks in
+                                        style={{
+                                            transform: `rotateY(${rotation}deg) translateZ(${radius}px)`,
+                                        }}
+                                        onClick={(e) => handleItemClick(e, index)}
+                                    >
+                                        <img
+                                            src={item.img}
+                                            alt={item.title}
+                                            className='w-full h-full object-cover rounded-lg shadow-2xl border border-white/10'
+                                            draggable="false"
+                                        />
+                                        <div className="absolute -bottom-24 left-0 w-full text-center transition-opacity duration-300 item-info pointer-events-none">
+                                            <h3 className="text-white font-display text-3xl font-bold tracking-tight">{item.title}</h3>
+                                            <p className="text-white/60 text-sm mt-2 font-light">{item.desc}</p>
+                                        </div>
+                                    </div>
+                                );
+                            })}
                         </div>
+                    </div>
+
+                    <div className="absolute bottom-10 text-center pointer-events-none">
+                        <p className="text-white/40 text-xs uppercase tracking-[0.2em]">Drag or use arrow keys</p>
                     </div>
                 </div>
             )}

@@ -6,15 +6,24 @@ export default {
   ],
   theme: {
     extend: {
-       fontFamily: {
-        lexend: ['Lexend', 'serif'],
+      fontFamily: {
+        sans: ['Inter', 'sans-serif'],
+        display: ['Syne', 'sans-serif'],
       },
-      boxShadow: {
-              retro: '4px 4px 0px #d97706, 8px 8px 0px #f59e0b, 12px 12px 0px #fbbf24',
+      colors: {
+        primary: 'var(--bg-primary)',
+        secondary: 'var(--bg-secondary)',
+        'text-main': 'var(--text-primary)',
+        'text-muted': 'var(--text-secondary)',
+        accent: 'var(--accent)',
+        border: 'var(--border)',
       },
       animation: {
-        'bounce-slow': 'bounce 1s ease-in-out',
+        'spin-slow': 'spin 12s linear infinite',
       },
+      backgroundImage: {
+        'noise': "url('data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.65%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22 opacity=%220.05%22/%3E%3C/svg%3E')",
+      }
     },
   },
   plugins: [],

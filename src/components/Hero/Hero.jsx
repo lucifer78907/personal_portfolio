@@ -1,93 +1,81 @@
-import React, { useRef, useState } from 'react';
-import Poloroids from './Poloroids';
+import React, { useRef } from 'react';
 import { useGSAP } from '@gsap/react';
-import { SplitText } from 'gsap/all';
 import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import SplitText from '../SplitText';
 
-const description = [
-    {
-        text: 'travel || code || fun',
-        color: 'text-amber-800'
-    },
-    {
-        text: 'Error at line 98:57',
-        color: 'text-red-500'
-    },
-    {
-        text: 'humorous',
-        color: 'text-amber-800'
-    },
-    {
-        text: 'coffee && gym addict',
-        color: 'text-amber-800'
-    },
-]
+gsap.registerPlugin(ScrollTrigger);
 
-const Hero = ({ addAnimation, index }) => {
-    const containerRef = useRef();
-    const [totalTime, setTotalTime] = useState();
+const Hero = () => {
+    const containerRef = useRef(null);
+    const textRef = useRef(null);
 
     useGSAP(() => {
+        const tl = gsap.timeline();
 
-        let splitHeading = SplitText.create('.heading', {
-            type: 'chars',
-            mask: 'chars',
+        // Text Reveal
+        tl.from('.hero-char', {
+            y: 100,
+            opacity: 0,
+            stagger: 0.02,
+            duration: 1,
+            ease: "power4.out",
+            delay: 0.5
         })
+            .from('.hero-subtitle', {
+                y: 20,
+                opacity: 0,
+                duration: 0.8,
+                ease: "power3.out"
+            }, "-=0.5")
+            .from('.scroll-indicator', {
+                y: -10,
+                opacity: 0,
+                duration: 0.6,
+                ease: "power2.out"
+            }, "-=0.3");
 
-        let splitTagLine = SplitText.create('.para', {
-            type: 'lines',
-            mask: 'lines',
+        // Scroll Parallax for Text
+        gsap.to('.hero-content', {
+            y: -100,
+            opacity: 0,
+            scrollTrigger: {
+                trigger: containerRef.current,
+                start: "top top",
+                end: "bottom top",
+                scrub: 1
+            }
         });
 
-
-        let tl = gsap.timeline();
-
-        tl.from(splitHeading.chars, {
-            duration: 0.8,
-            yPercent: 100,
-            opacity: 0,
-            stagger: 0.04,
-            ease: "power3.out",
-        })
-
-        tl.from(splitTagLine.lines, {
-            yPercent: 100,
-            opacity: 0,
-            stagger: 0.1,
-            ease: 'power2.out',
-            duration: 0.6,
-        }, "-=0.4")
-
-        tl.from('.desc', {
-            opacity: 0,
-            y: 30,
-            ease: 'power2.out',
-            duration: 0.8,
-        }, "-=0.3")
-
-        setTotalTime(tl.totalDuration());
-        addAnimation(tl, "-=0.2");
-
-
-
-    }, { scope: containerRef })
-
+    }, { scope: containerRef });
 
     return (
-        <section ref={containerRef} className='p-4 flex flex-col mb-12 xl:mt-4' >
-            <h1 className='heading font-lexend text-5xl sm:text-6xl md:text-7xl xl:text-9xl xl:text-center tracking-tighter  font-semibold text-yellow-950'>Hi there! <br /> I'm Rudra.</h1>
-            <p className='para mt-4 font-lexend sm:text-lg lg:text-xl xl:text-center xl:text-2xl text-amber-700 text-xs'>{`<FullStackDev/>`} turning ideas into fast, scalable web apps with real impact.</p>
-            <div className='xl:grid xl:grid-cols-2 xl:gap-8 2xl:gap-16 xl:items-center'>
-                <Poloroids delay={totalTime} />
-                <p className='font-lexend desc text-2xl md:text-3xl xl:-mt-32 -mt-2 2xl:text-4xl font-medium tracking-wide leading-snug'>
-                    {
-                        description.map((text, index) => {
-                            return <span key={index} className={`block ${text.color} `}>&#x2022; {text.text}</span>
-                        })
-                    }
-                </p>
+        <section
+            id="hero-section"
+            ref={containerRef}
+            className='relative h-screen w-full flex flex-col items-center justify-center overflow-hidden bg-bg-primary'
+        >
+            <div className='hero-content relative z-10 text-center px-4 mix-blend-difference'>
+                <h1 ref={textRef} className='font-display text-[8vw] md:text-[10vw] leading-[0.9] font-bold tracking-tighter text-text-main uppercase'>
+                    <SplitText text="Creative" className="hero-char inline-block" />
+                    <br />
+                    <SplitText text="Developer" className="hero-char inline-block" />
+                </h1>
+
+                <div className='hero-subtitle mt-6 md:mt-8 flex flex-col items-center gap-4'>
+                    <p className='text-base md:text-xl font-light text-text-muted tracking-wide max-w-lg'>
+                        Crafting digital experiences with code & motion.
+                    </p>
+                </div>
             </div>
-        </section >
+
+            <div className='scroll-indicator absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 mix-blend-difference'>
+                <span className='text-xs uppercase tracking-[0.2em] text-text-muted'>Scroll</span>
+                <div className='w-[1px] h-12 bg-text-muted/50 overflow-hidden'>
+                    <div className='w-full h-full bg-text-main animate-scroll-line'></div>
+                </div>
+            </div>
+        </section>
     );
 };
 

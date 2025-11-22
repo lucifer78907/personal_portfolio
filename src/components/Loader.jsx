@@ -1,7 +1,6 @@
 import gsap from "gsap";
 import { useLayoutEffect, useRef } from "react";
 import { useGSAP } from "@gsap/react";
-// Components
 
 const HeroLoader = ({ addAnimation, index }) => {
     const counterRef = useRef(null);
@@ -39,7 +38,9 @@ const HeroLoader = ({ addAnimation, index }) => {
 
     useGSAP(() => {
         const tl = gsap.timeline();
-        tl.to(".hero__counter", { duration: 0.2, delay: 2.2, opacity: 0 });
+
+        // Reduce delay to 0.5s for faster feedback
+        tl.to(".hero__counter", { duration: 0.2, delay: 0.5, opacity: 0 });
         tl.to(
             ".hero__bar",
             {
@@ -53,12 +54,25 @@ const HeroLoader = ({ addAnimation, index }) => {
             "-=0.1"
         );
         tl.set(".hero__overlay", { display: "none" });
-        addAnimation(tl, index);
+
+        // Play immediately instead of waiting for global timeline
+        // addAnimation(tl, index); 
     });
+
+    // Safety timeout to force remove loader
+    useLayoutEffect(() => {
+        const timer = setTimeout(() => {
+            const overlay = document.querySelector('.hero__overlay');
+            if (overlay) {
+                overlay.style.display = 'none';
+            }
+        }, 5000);
+        return () => clearTimeout(timer);
+    }, []);
 
     return (
         <section className="hero__overlay fixed h-screen w-screen z-[101] flex">
-            <p className="hero__counter fixed font-lexend z-20 text-8xl bottom-10 right-10 text-amber-200" ref={counterRef}>
+            <p className="hero__counter fixed font-display z-20 text-8xl bottom-10 right-10 text-text-main mix-blend-difference" ref={counterRef}>
                 0
             </p>
             <LoadingBars />
@@ -74,7 +88,7 @@ export const LoadingBars = () => {
     const bars = [];
 
     for (let i = 0; i < total; i++) {
-        bars.push(<div key={i} className={`hero__bar ${width} h-[105vh] bg-amber-800`}></div>);
+        bars.push(<div key={i} className={`hero__bar ${width} h-[105vh] bg-primary`}></div>);
     }
 
     return <>{bars}</>;

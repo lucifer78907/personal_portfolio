@@ -6,11 +6,14 @@ import 'swiper/css/effect-cards';
 import App from './App.jsx'
 import SmoothScroll from './provider/smooth-scroll.jsx'
 import { TimelineContextProvider } from './context/timelineContext.jsx';
+import { ThemeProvider } from './context/ThemeContext.jsx';
 
 createRoot(document.getElementById('root')).render(
   <SmoothScroll>
-    <TimelineContextProvider>
-      <App />
-    </TimelineContextProvider>
+    <ThemeProvider>
+      <TimelineContextProvider>
+        <App />
+      </TimelineContextProvider>
+    </ThemeProvider>
   </SmoothScroll>
 )
