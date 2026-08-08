@@ -45,13 +45,17 @@ const RootLayout = () => {
 
             <div id="smooth-wrapper">
                 <div id="smooth-content">
-                    <div className="sm:w-3/4 mx-auto lg:w-3/5">
-                        {/* The nav is now a floating burger, so content only needs
-                            enough headroom to clear it — not a full bar's height. */}
-                        <main className="overflow-x-hidden pt-8">
-                            <Outlet />
-                        </main>
-                    </div>
+                    {/*
+                      No width constraint here. Pages set their own, because a
+                      layout-level column forces anything full-bleed (the
+                      horizontal About section) to escape with a transform or a
+                      negative margin — and both of those fight ScrollTrigger's
+                      pin-spacer and clip the pinned content.
+                      Shared column lives in <PageColumn>.
+                    */}
+                    <main className="overflow-x-hidden pt-8">
+                        <Outlet />
+                    </main>
                 </div>
             </div>
         </>

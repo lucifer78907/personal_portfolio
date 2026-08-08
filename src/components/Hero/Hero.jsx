@@ -4,6 +4,7 @@ import { useGSAP } from '@gsap/react';
 import { SplitText } from 'gsap/all';
 import gsap from 'gsap';
 import { useIntro } from '../../context/introContext';
+import { EASE } from '../../lib/eases';
 
 const description = [
     {
@@ -51,20 +52,20 @@ const Hero = () => {
                 yPercent: 100,
                 opacity: 0,
                 stagger: 0.05,
-                ease: 'power3.out',
+                ease: EASE.arrive,
             })
             .from(splitTagLine.lines, {
                 yPercent: 100,
                 opacity: 0,
                 stagger: 0.12,
                 duration: 0.7,
-                ease: 'power2.out',
+                ease: EASE.text,
             }, '-=0.15')
             .from('.desc', {
                 opacity: 0,
                 y: 30,
                 duration: 0.8,
-                ease: 'power2.out',
+                ease: EASE.text,
             }, '-=0.1');
     }, { scope: containerRef });
 

@@ -3,6 +3,7 @@ import { useGSAP } from '@gsap/react';
 import gsap from 'gsap';
 import { SplitText, Flip, ScrollTrigger } from 'gsap/all';
 import { IoClose } from 'react-icons/io5';
+import PageColumn from '../components/PageColumn';
 import img1 from '../assets/gallery/image1.webp';
 import img2 from '../assets/gallery/image2.webp';
 import img3 from '../assets/gallery/image3.webp';
@@ -264,6 +265,7 @@ function Gallery() {
     }, { scope: containerRef, dependencies: [selectedImage] });
 
     return (
+        <PageColumn>
         <section ref={containerRef} className='p-4 py-20 relative'>
             <header>
                 <h2 className='gallery-heading font-lexend text-4xl sm:text-5xl md:text-7xl font-semibold tracking-tighter text-amber-950'>
@@ -337,6 +339,7 @@ function Gallery() {
                 </div>
             )}
         </section>
+        </PageColumn>
     );
 }
 

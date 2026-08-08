@@ -2,6 +2,7 @@ import { useRef } from "react";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { useIntro } from "../context/introContext";
+import { EASE } from "../lib/eases";
 
 const BAR_COUNT = typeof window !== "undefined" && window.innerWidth > 768 ? 12 : 6;
 
@@ -32,19 +33,19 @@ const HeroLoader = () => {
             tl.to(counter, {
                 value,
                 duration,
-                ease: "power1.inOut",
+                ease: EASE.travel,
                 snap: { value: 1 },
                 onUpdate: render,
             });
             if (pause) tl.to({}, { duration: pause }); // deliberate stall
         });
 
-        tl.to(".hero__counter", { opacity: 0, duration: 0.35 }, "+=0.25")
+        tl.to(".hero__counter", { opacity: 0, duration: 0.35, ease: EASE.text }, "+=0.25")
             .to(".hero__bar", {
                 height: 0,
                 duration: 1.15,
                 stagger: { amount: 0.4 },
-                ease: "power3.inOut",
+                ease: EASE.travel,
             }, "-=0.15")
             // Hand off just before the bars finish so the page is already moving
             // as it's revealed — but only just, so it reads as its own beat.

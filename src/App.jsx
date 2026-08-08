@@ -1,49 +1,35 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom"
+import gsap from 'gsap';
+import { SplitText } from 'gsap/SplitText';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 // Layout
 import RootLayout from "./layout/RootLayout";
 // Pages
 import HomePage from "./pages/HomePage";
+import About from "./pages/About";
 import Gallery from "./pages/Gallery";
 import Contact from "./pages/Contact";
 import Projects from "./pages/Projects";
-import { SplitText } from 'gsap/all';
-import ScrollTrigger from 'gsap/ScrollTrigger';
-import gsap from 'gsap';
+
+gsap.registerPlugin(SplitText, ScrollTrigger);
+
+// Hoisted out of the component: createBrowserRouter() builds a new router on
+// every call, so creating it during render would rebuild (and reset) routing
+// state on any App re-render.
+const router = createBrowserRouter([
+  {
+    path: '/',
+    element: <RootLayout />,
+    children: [
+      { index: true, element: <HomePage /> },
+      { path: '/about', element: <About /> },
+      { path: '/random-photos', element: <Gallery /> },
+      { path: '/contact', element: <Contact /> },
+      { path: '/projects', element: <Projects /> },
+    ],
+  },
+]);
 
 export default function App() {
-  // gsap dependencies
-  gsap.registerPlugin(SplitText);
-  gsap.registerPlugin(ScrollTrigger);
-
-  const router = createBrowserRouter(
-    [
-      {
-        path: '/',
-        element: <RootLayout />,
-        children: [
-          {
-            index: true,
-            element: <HomePage />
-          },
-          {
-            path: '/random-photos',
-            element: <Gallery />
-          },
-          {
-            path: '/contact',
-            element: <Contact />
-          },
-          {
-            path: '/projects',
-            element: <Projects />
-          }
-        ]
-      }
-    ]
-  );
-
-
-  return (
-    <RouterProvider router={router} />
-  )
+  return <RouterProvider router={router} />
 }

@@ -4,6 +4,7 @@ import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { ScrollTrigger, SplitText } from "gsap/all";
 import Toast from "../components/Toast";
+import PageColumn from "../components/PageColumn";
 
 const Contact = () => {
     const containerRef = useRef();
@@ -104,6 +105,7 @@ const Contact = () => {
     }, { scope: containerRef });
 
     return (
+        <PageColumn>
         <section ref={containerRef} className="p-6 py-24 min-h-screen flex flex-col justify-center relative overflow-hidden">
             {/* Portalled to <body>: the Toast is position:fixed, and inside
                 #smooth-content ScrollSmoother's transform would anchor it to the
@@ -232,6 +234,7 @@ const Contact = () => {
                 </form>
             </div>
         </section>
+        </PageColumn>
     );
 };
 

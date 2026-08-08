@@ -9,6 +9,7 @@ import { RiGitRepositoryPrivateFill, RiNextjsFill, RiTailwindCssFill } from 'rea
 import { SiExpress, SiGreensock, SiJavascript, SiNetlify, SiReactrouter, SiSwiper, SiTypescript, SiOpenai, SiKubernetes, SiPostgresql } from 'react-icons/si';
 import { HiSparkles } from 'react-icons/hi2';
 import { TbPlugConnected } from 'react-icons/tb';
+import PageColumn from '../components/PageColumn';
 
 const projects = [
     {
@@ -137,6 +138,7 @@ function Projects() {
     }, { scope: containerRef });
 
     return (
+        <PageColumn>
         <section ref={containerRef} className='p-6 py-20 2xl:w-3/4 2xl:mx-auto'>
             <header className='mb-12'>
                 <h2 className='projects-heading font-lexend text-5xl sm:text-6xl md:text-7xl font-semibold tracking-tighter text-amber-950 overflow-hidden'>
@@ -152,6 +154,7 @@ function Projects() {
                 })}
             </main>
         </section>
+        </PageColumn>
     );
 }
 

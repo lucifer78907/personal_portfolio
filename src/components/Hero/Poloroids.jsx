@@ -10,7 +10,10 @@ import { ScrollTrigger } from 'gsap/all'
 import { useGSAP } from '@gsap/react'
 import gsap from 'gsap'
 import { useEffect, useRef } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useIntro } from '../../context/introContext'
+import { setPendingTransition } from '../../lib/pageTransition'
+import { EASE } from '../../lib/eases'
 
 const slides = [imagePoloroid, imagePoloroid2, imagePoloroid3, imagePoloroid4, imagePoloroid5];
 
@@ -18,6 +21,23 @@ const Poloroids = () => {
     const containerRef = useRef(null);
     const introTl = useRef(null);
     const { introComplete } = useIntro();
+    const navigate = useNavigate();
+
+    // Clicking a polaroid carries it into /about as a shared element. Swiper's
+    // own onClick is used rather than a per-slide handler because it already
+    // distinguishes a click from the end of a drag.
+    const handleCardClick = (swiper) => {
+        const slide = swiper.clickedSlide;
+        const img = slide?.querySelector('img');
+        if (!img) return;
+
+        const { top, left, width, height } = img.getBoundingClientRect();
+        setPendingTransition({
+            src: img.currentSrc || img.src,
+            rect: { top, left, width, height },
+        });
+        navigate('/about');
+    };
 
     useGSAP(() => {
         // Targets the ref, not '.container' — that selector was unscoped and
@@ -27,7 +47,7 @@ const Poloroids = () => {
                 xPercent: 100,
                 opacity: 0,
                 duration: 1.5,
-                ease: 'expo.out',
+                ease: EASE.arrive,
             }, 0.8); // holds until the heading has finished, then slides in
     }, { scope: containerRef });
 
@@ -50,6 +70,7 @@ const Poloroids = () => {
                         swiper.autoplay.stop();
                     }
                 }}
+                onClick={handleCardClick}
                 grabCursor={true}
                 modules={[EffectCards, Autoplay]}
                 autoplay={{
@@ -61,7 +82,7 @@ const Poloroids = () => {
             >
                 {slides.map((src, i) => (
                     <SwiperSlide key={i}>
-                        <img src={src} alt='Rudra Pratap Singh' />
+                        <img src={src} alt='Rudra Pratap Singh' className='cursor-pointer' />
                     </SwiperSlide>
                 ))}
             </Swiper>

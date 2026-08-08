@@ -3,21 +3,15 @@ import { NavLink, useLocation } from 'react-router-dom';
 import { useGSAP } from '@gsap/react';
 import gsap from 'gsap';
 import { MorphSVGPlugin } from 'gsap/MorphSVGPlugin';
-import { CustomEase } from 'gsap/CustomEase';
 import { ScrollSmoother } from 'gsap/ScrollSmoother';
 import { useIntro } from '../context/introContext';
+import { EASE } from '../lib/eases'; // registers quartInOut / expoOut / quintOut
 
-gsap.registerPlugin(MorphSVGPlugin, CustomEase);
-
-// CustomEase accepts a four-number cubic-bezier string, so the curves awwwards
-// sites actually use can be dropped in directly instead of approximating them
-// with power4/expo. Values are the standard easings.net equivalents.
-CustomEase.create('quartInOut', '0.76, 0, 0.24, 1'); // easeInOutQuart — heavy, deliberate
-CustomEase.create('expoOut', '0.16, 1, 0.3, 1');     // easeOutExpo — violent start, long glide
-CustomEase.create('quintOut', '0.22, 1, 0.36, 1');   // easeOutQuint — softer sibling of the above
+gsap.registerPlugin(MorphSVGPlugin);
 
 const NAV_ITEMS = [
     { to: '/', label: 'Home' },
+    { to: '/about', label: 'About' },
     { to: '/projects', label: 'Work' },
     { to: '/random-photos', label: 'Gallery' },
     { to: '/contact', label: 'Say hi' },
@@ -69,7 +63,7 @@ const Header = () => {
                 y: -28,
                 opacity: 0,
                 duration: 0.7,
-                ease: 'power3.out',
+                ease: EASE.arrive,
             }, 0.1);
 
         // ── Open/close (played forward, reversed to close) ────────────────
