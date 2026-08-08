@@ -15,8 +15,11 @@ gsap.registerPlugin(Flip, ScrollTrigger, SplitText);
 // One sentence, one unbroken line. Length is tuned so that at STATEMENT_SIZE it
 // runs roughly three viewports wide — but nothing depends on that guess: the
 // travel distance is measured from the real scrollWidth at runtime.
+//
+// No employer names: they date the page, they mean nothing to a stranger, and
+// the credits block further down already carries them.
 const STATEMENT =
-    'I’m a software engineer building fintech and AI platforms. I led the LoanNetwork → Nestara migration end to end, and now I build agentic workflows for Initializ.';
+    'I’m a software engineer. I build fintech that moves money, AI products that do real work, and the agentic workflows running quietly underneath them.';
 
 const STATEMENT_SIZE = 'clamp(2rem, 4vw, 7rem)';
 
@@ -59,8 +62,8 @@ const EDUCATION = [
     { school: 'S.D Public School', detail: 'Intermediate — 94.4% PCM', period: '2019 — 2020' },
 ];
 
-const SCRUB = 1.2;        // playhead catch-up — this is what makes it glide
-const SCROLL_MULT = 1.2;  // scroll distance per pixel travelled; raise to slow
+const SCRUB = 2;          // playhead catch-up — this is what makes it glide
+const SCROLL_MULT = 2.2;  // scroll distance per pixel travelled; raise to slow
 const TRAVEL = 10;        // timeline units for the horizontal move
 const LEAD = 0.15;        // brief settle before it starts moving
 const TAIL = 0.4;         // hold after it lands
@@ -68,9 +71,18 @@ const TAIL = 0.4;         // hold after it lands
 const LIT = '#451a03';                  // filled
 const UNLIT = 'rgba(69, 26, 3, 0.13)';  // not yet filled
 
-// Words that get a pop and a visit from the spark. Matched case-insensitively
-// against the split word's text, so punctuation doesn't break the match.
-const HIGHLIGHTS = ['fintech', 'AI', 'migration', 'agentic', 'Initializ'];
+// Words that break out of the plain fill and animate character by character.
+// Keyed by the word stripped to letters, so trailing punctuation still matches.
+// These are also the words the spark visits.
+const WORD_FX = {
+    fintech: 'standUp',   // letters lying flat, swinging upright
+    money: 'drop',        // letters falling into place from above
+    ai: 'flip',           // letters rotating in on the X axis
+    agentic: 'standUp',
+    workflows: 'drop',
+};
+
+const fxKey = (el) => el.textContent.toLowerCase().replace(/[^a-z]/g, '');
 
 // Hard-stop gradient: LIT up to --p, UNLIT immediately after. No soft edge —
 // that's what makes it read as a bar filling rather than a fade. --p is
@@ -128,22 +140,28 @@ const About = () => {
         // ── The line ─────────────────────────────────────────────────────
         const track = trackRef.current;
         const marker = markerRef.current;
-        const words = SplitText.create('.statement', { type: 'words' }).words;
+        // 'words,chars' nests chars inside words, so a word can either be
+        // filled as one block or animated glyph by glyph.
+        const words = SplitText.create('.statement', { type: 'words,chars' }).words;
 
-        // Paint each word as its own progress bar.
         words.forEach((w) => {
+            w.style.display = 'inline-block';
+
+            if (WORD_FX[fxKey(w)]) {
+                // Animated words are painted solid — the gradient fill is the
+                // *other* treatment, and running both would fight each other.
+                w.style.color = LIT;
+                if (WORD_FX[fxKey(w)] === 'flip') w.style.perspective = '600px';
+                return;
+            }
+
+            // Everything else is its own little progress bar.
             w.style.setProperty('--p', '0');
             w.style.backgroundImage = FILL_GRADIENT;
             w.style.webkitBackgroundClip = 'text';
             w.style.backgroundClip = 'text';
             w.style.color = 'transparent';
-            // inline-block keeps each word its own background-painting box, so
-            // one word's gradient can't bleed across its neighbours.
-            w.style.display = 'inline-block';
         });
-
-        const isHighlight = (w) =>
-            HIGHLIGHTS.some((h) => w.textContent.toLowerCase().includes(h.toLowerCase()));
 
         // Measured, not assumed — the sentence's real width depends on the
         // font, the viewport and where clamp() lands.
@@ -186,12 +204,52 @@ const About = () => {
             // and the words stop lining up with where they actually are.
             .to(track, { x: () => -distance(), ease: 'none', duration: TRAVEL }, 'travel');
 
+        // Snappy — a char flourish should read as a flick, not a performance.
+        // Anything longer and the word travels off-centre before it lands.
+        const fxDur = fillDur * 0.9;
+
+        // These use shaped eases even though the timeline is scrubbed. That's
+        // deliberate and it's the exception to the ease:'none' rule elsewhere:
+        // a curve is only a problem on a long travel, where it desynchronises
+        // from the scrollbar. On a short flourish the overshoot IS the effect.
+        const FX = {
+            standUp: { rotate: 92, opacity: 0, transformOrigin: '0% 100%' },
+            drop: { yPercent: -140, opacity: 0 },
+            flip: { rotationX: -95, opacity: 0, transformOrigin: '50% 100%' },
+        };
+
         words.forEach((w) => {
-            tl.to(w, { '--p': 100, ease: 'none', duration: fillDur }, `travel+=${posOf(w)}`);
+            const at = posOf(w);
+            const fx = WORD_FX[fxKey(w)];
+
+            if (!fx) {
+                tl.to(w, { '--p': 100, ease: 'none', duration: fillDur }, `travel+=${at}`);
+                return;
+            }
+
+            const chars = gsap.utils.toArray(w.children);
+            gsap.set(chars, FX[fx]);
+
+            // A staggered tween occupies duration + stagger×(n−1) on the
+            // timeline. posOf() marks when the word is CENTRED, so the span has
+            // to straddle that point — starting there means every character
+            // after the first lands left of centre.
+            const stagger = (fxDur * 0.4) / Math.max(1, chars.length);
+            const span = fxDur + stagger * Math.max(0, chars.length - 1);
+
+            tl.to(chars, {
+                rotate: 0,
+                rotationX: 0,
+                yPercent: 0,
+                opacity: 1,
+                duration: fxDur,
+                stagger,
+                ease: 'back.out(1.9)',
+            }, `travel+=${Math.max(0, at - span / 2)}`);
         });
 
-        // ── Spark hops between the key words, and they react ─────────────
-        const hot = words.filter(isHighlight);
+        // ── Spark hops between the animated words, and they react ────────
+        const hot = words.filter((w) => WORD_FX[fxKey(w)]);
 
         // Positions are function-based so they re-measure on refresh — the
         // offsets shift once the webfont lands, and invalidateOnRefresh above
