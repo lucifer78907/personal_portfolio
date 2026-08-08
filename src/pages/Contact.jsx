@@ -1,4 +1,5 @@
 import { useState, useRef } from "react";
+import { createPortal } from "react-dom";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { ScrollTrigger, SplitText } from "gsap/all";
@@ -104,7 +105,13 @@ const Contact = () => {
 
     return (
         <section ref={containerRef} className="p-6 py-24 min-h-screen flex flex-col justify-center relative overflow-hidden">
-            <Toast show={showToast} message={'Please fill in all the details'} />
+            {/* Portalled to <body>: the Toast is position:fixed, and inside
+                #smooth-content ScrollSmoother's transform would anchor it to the
+                page instead of the viewport. */}
+            {createPortal(
+                <Toast show={showToast} message={'Please fill in all the details'} />,
+                document.body
+            )}
 
             {/* Decorative background elements */}
             <div className="absolute inset-0 -z-10">

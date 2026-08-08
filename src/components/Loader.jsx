@@ -1,82 +1,70 @@
-import gsap from "gsap";
-import { useLayoutEffect, useRef } from "react";
+import { useRef } from "react";
 import { useGSAP } from "@gsap/react";
-// Components
+import gsap from "gsap";
+import { useIntro } from "../context/introContext";
 
-const HeroLoader = ({ addAnimation, index }) => {
+const BAR_COUNT = typeof window !== "undefined" && window.innerWidth > 768 ? 12 : 6;
+
+// A real loader doesn't climb at a constant rate — it surges, stalls, surges.
+// Each stage counts up to `value`, then holds for `pause` before the next one.
+// Total ≈ 2.8s. Tune these numbers to change the whole feel of the count.
+const COUNT_STAGES = [
+    { value: 37, duration: 0.65, pause: 0.22 },
+    { value: 71, duration: 0.55, pause: 0.18 },
+    { value: 94, duration: 0.50, pause: 0.28 },
+    { value: 100, duration: 0.40, pause: 0 },
+];
+
+const HeroLoader = () => {
+    const overlayRef = useRef(null);
     const counterRef = useRef(null);
-
-    useLayoutEffect(() => {
-        let timeout;
-        const startLoader = () => {
-            let currValue = 0;
-
-            const updateCounter = () => {
-                if (currValue == 100) {
-                    return;
-                }
-
-                currValue += Math.floor(Math.random() * 10) + 1;
-
-                if (currValue > 100) {
-                    currValue = 100;
-                }
-
-                if (counterRef.current !== null) {
-                    counterRef.current.textContent = currValue.toString();
-                }
-
-                let delay = Math.floor(Math.random() * 200) + 50;
-                timeout = setTimeout(updateCounter, delay);
-            };
-            updateCounter();
-        };
-
-        startLoader();
-
-        return () => clearTimeout(timeout);
-    }, []);
+    const { finishIntro } = useIntro();
 
     useGSAP(() => {
+        const counter = { value: 0 };
+        const render = () => {
+            if (counterRef.current) counterRef.current.textContent = counter.value;
+        };
+
         const tl = gsap.timeline();
-        tl.to(".hero__counter", { duration: 0.2, delay: 2.2, opacity: 0 });
-        tl.to(
-            ".hero__bar",
-            {
-                duration: 1,
+
+        COUNT_STAGES.forEach(({ value, duration, pause }) => {
+            tl.to(counter, {
+                value,
+                duration,
+                ease: "power1.inOut",
+                snap: { value: 1 },
+                onUpdate: render,
+            });
+            if (pause) tl.to({}, { duration: pause }); // deliberate stall
+        });
+
+        tl.to(".hero__counter", { opacity: 0, duration: 0.35 }, "+=0.25")
+            .to(".hero__bar", {
                 height: 0,
-                stagger: {
-                    amount: 0.3,
-                },
+                duration: 1.15,
+                stagger: { amount: 0.4 },
                 ease: "power3.inOut",
-            },
-            "-=0.1"
-        );
-        tl.set(".hero__overlay", { display: "none" });
-        addAnimation(tl, index);
-    });
+            }, "-=0.15")
+            // Hand off just before the bars finish so the page is already moving
+            // as it's revealed — but only just, so it reads as its own beat.
+            .call(finishIntro, null, "-=0.25")
+            .set(overlayRef.current, { display: "none" });
+    }, { scope: overlayRef });
 
     return (
-        <section className="hero__overlay fixed h-screen w-screen z-[101] flex">
-            <p className="hero__counter fixed font-lexend z-20 text-8xl bottom-10 right-10 text-amber-200" ref={counterRef}>
+        <section ref={overlayRef} className="hero__overlay fixed inset-0 z-[101] flex">
+            <p
+                ref={counterRef}
+                className="hero__counter fixed font-lexend z-20 text-8xl bottom-10 right-10 text-amber-200"
+            >
                 0
             </p>
-            <LoadingBars />
+            {Array.from({ length: BAR_COUNT }, (_, i) => (
+                <div key={i} className="hero__bar flex-1 h-full bg-amber-800" />
+            ))}
         </section>
     );
 };
 
 export default HeroLoader;
-
-export const LoadingBars = () => {
-    const total = window.innerWidth > 768 ? 12 : 6;
-    const width = total === 12 ? 'w-[15vw]' : 'w-[20vw]'
-    const bars = [];
-
-    for (let i = 0; i < total; i++) {
-        bars.push(<div key={i} className={`hero__bar ${width} h-[105vh] bg-amber-800`}></div>);
-    }
-
-    return <>{bars}</>;
-};
-

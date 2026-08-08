@@ -1,16 +1,13 @@
-import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import 'swiper/css';
 import 'swiper/css/effect-cards';
 import App from './App.jsx'
-import SmoothScroll from './provider/smooth-scroll.jsx'
-import { TimelineContextProvider } from './context/timelineContext.jsx';
+import { IntroProvider } from './context/introContext.jsx';
 
+// Smooth scrolling is handled by GSAP ScrollSmoother in RootLayout, not a provider.
 createRoot(document.getElementById('root')).render(
-  <SmoothScroll>
-    <TimelineContextProvider>
-      <App />
-    </TimelineContextProvider>
-  </SmoothScroll>
+  <IntroProvider>
+    <App />
+  </IntroProvider>
 )
