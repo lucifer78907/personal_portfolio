@@ -20,9 +20,14 @@ gsap.registerPlugin(CustomEase);
 CustomEase.create('quartInOut', '0.76, 0, 0.24, 1'); // easeInOutQuart — heavy, deliberate. Travel.
 CustomEase.create('expoOut', '0.16, 1, 0.3, 1');     // easeOutExpo — violent start, long glide. Arrivals.
 CustomEase.create('quintOut', '0.22, 1, 0.36, 1');   // easeOutQuint — softer sibling. Text, small moves.
+CustomEase.create('cubicIn', '0.32, 0, 0.67, 0');    // easeInCubic — gathers speed. Departures.
 
 export const EASE = {
     travel: 'quartInOut',
     arrive: 'expoOut',
     text: 'quintOut',
+    // The counterpart to `arrive`. Anything moving *away* should accelerate out of
+    // frame; an out-ease there decelerates into the finish and reads as the motion
+    // giving up just before it leaves.
+    leave: 'cubicIn',
 };

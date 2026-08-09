@@ -31,10 +31,18 @@ const Hero = () => {
     const { introComplete } = useIntro();
 
     useGSAP(() => {
-        const splitHeading = SplitText.create('.heading', {
+        // Line one is deliberately absent: the loader's word Flips into it, and
+        // that landing IS its reveal. Splitting it here would animate it a second
+        // time, on top of the copy that just arrived.
+        const splitHeading = SplitText.create('.heading-line-2', {
             type: 'chars',
             mask: 'chars',
         });
+
+        // Hidden until the handoff. autoAlpha, not display — the loader has to
+        // measure this box to know where to fly to, and a display:none element
+        // has no box to measure.
+        gsap.set('.heading-line-1', { autoAlpha: 0 });
 
         const splitTagLine = SplitText.create('.para', {
             type: 'lines',
@@ -47,6 +55,9 @@ const Hero = () => {
         // Three distinct beats. The overlaps are deliberately small (-0.15/-0.1)
         // so each one reads as its own move instead of all landing together.
         introTl.current = gsap.timeline({ paused: true })
+            // Frame-exact swap: the loader hides its copy on the same tick it calls
+            // finishIntro, which plays this. Same string, same size, same place.
+            .set('.heading-line-1', { autoAlpha: 1 }, 0)
             .from(splitHeading.chars, {
                 duration: 0.9,
                 yPercent: 100,
@@ -76,7 +87,17 @@ const Hero = () => {
 
     return (
         <section ref={containerRef} className='p-4 flex flex-col mb-12 xl:mt-4' >
-            <h1 className='heading font-lexend text-5xl sm:text-6xl md:text-7xl xl:text-9xl xl:text-center tracking-tighter  font-semibold text-yellow-950'>Hi there! <br /> I&apos;m Rudra.</h1>
+            {/*
+              Two spans instead of a <br>, because line one is the loader's Flip
+              target and needs a box of its own. w-fit is what makes that box hug
+              the text — as a plain block it would span the full column width and
+              the loader would scale its word to fit *that* instead of the words.
+              mx-auto reproduces what xl:text-center used to do.
+            */}
+            <h1 className='heading font-lexend text-5xl sm:text-6xl md:text-7xl xl:text-9xl tracking-tighter font-semibold text-yellow-950'>
+                <span className='heading-line-1 block w-fit xl:mx-auto'>Hi there!</span>
+                <span className='heading-line-2 block w-fit xl:mx-auto'>I&apos;m Rudra.</span>
+            </h1>
             <p className='para mt-4 font-lexend sm:text-lg lg:text-xl xl:text-center xl:text-2xl text-amber-700 text-xs'>{`<FullStackDev/>`} turning ideas into fast, scalable web apps with real impact.</p>
             <div className='xl:grid xl:grid-cols-2 xl:gap-8 2xl:gap-16 xl:items-center'>
                 <Poloroids />
