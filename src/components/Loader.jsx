@@ -3,36 +3,78 @@ import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { Flip } from "gsap/Flip";
 import { MorphSVGPlugin } from "gsap/MorphSVGPlugin";
-import { ScrambleTextPlugin } from "gsap/ScrambleTextPlugin";
 import { useIntro } from "../context/introContext";
 import { EASE } from "../lib/eases";
 import { PANELS } from "../lib/palette";
 
-gsap.registerPlugin(Flip, MorphSVGPlugin, ScrambleTextPlugin);
+gsap.registerPlugin(Flip, MorphSVGPlugin);
 
 /**
- * The word is the hero's first line, verbatim — not a greeting that resembles it.
+ * The cycle, and the word it has to land on.
  *
- * That identity is the whole trick: because the string, family, weight and
- * tracking all match [Hero.jsx]'s `.heading-line-1`, the loader's box and the
- * heading's box are similar rectangles, so a single uniform scale maps one onto
- * the other exactly. Change this and the Flip stops landing flush.
+ * The last entry is the one carrying structure: it is the hero's first line
+ * verbatim — not a greeting that resembles it. That identity is the whole
+ * trick: because the string, family, weight and tracking all match
+ * [Hero.jsx]'s `.heading-line-1`, the loader's box and the heading's box are
+ * similar rectangles, so a single uniform scale maps one onto the other
+ * exactly. Reorder the greetings freely; change what sits last and the Flip
+ * stops landing flush.
+ *
+ * Everything before it is free text, with one constraint: Lexend carries no
+ * CJK glyphs, so こんにちは resolves by per-glyph fallback to Noto Sans JP,
+ * requested alongside Lexend in index.css. A greeting in a script neither font
+ * covers renders in whatever the OS substitutes, at a weight and width that
+ * match nothing else in the cycle.
  */
-const WORD = "Hi there!";
+const GREETINGS = ["Namaste", "Hola", "Bonjour", "こんにちは", "Ciao", "Hi there!"];
+const WORD = GREETINGS[GREETINGS.length - 1];
 const HEADING_TARGET = ".heading-line-1";
 const HEADING_COLOR = "#422006"; // text-yellow-950, what the heading resolves to
-
-// Seeded into the markup so frame zero is already scrambled — same length as
-// WORD. A paused tween doesn't render until something asks it to, and progress(0)
-// on a tween already at 0 can no-op, so the first frame would otherwise be empty.
-const SEED = "#%X@!$Z&M";
-
-const SCRAMBLE_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ#%&@!$";
 
 // One tween, one curve, no stalls. The count runs on quartInOut — the same ease
 // the nav panels travel on — so it eases in, carries through the middle, and
 // settles into 100 as a single move.
-const COUNT_DURATION = 2.8;
+const COUNT_DURATION = 7.8;
+
+/**
+ * The cycle runs the exact length of the count, split into equal slots.
+ *
+ * Derived from COUNT_DURATION rather than typed, so the two cannot drift:
+ * retime the counter and the greetings retime with it, and the last one still
+ * resolves as 100 arrives. The budget is fixed and the slots divide it, so
+ * adding a greeting makes the cycle quicker rather than making the loader
+ * longer — which is the right default for the one thing standing between a
+ * visitor and the page.
+ *
+ * Each slot is a flip followed by a rest. The rest is what makes a greeting
+ * readable instead of a smear, and the final slot's rest is what leaves the
+ * word sitting still for a beat before the panels start to peel.
+ */
+const SLOT = COUNT_DURATION / GREETINGS.length;
+
+/**
+ * One flap, and the lag between neighbouring flaps.
+ *
+ * FLAP is solved for rather than typed, because a transition's real length is
+ * two half-flaps — the old character falling to edge-on, the new one dropping
+ * from edge-on — plus a stagger tail, and that tail is set by the LONGEST
+ * greeting in the cycle rather than by whichever one is currently turning.
+ * Budgeting against the longest is what keeps every transition inside its slot.
+ * Shorter words simply land early and rest longer, while the beat they arrive
+ * on stays metronomic, which is the half of a departure board that sells it.
+ */
+const LONGEST = Math.max(...GREETINGS.map((text) => [...text].length));
+const FLIP_SHARE = 0.55; // how much of a slot the flip may eat; the rest is rest
+const FLAP_LAG = 0.35; // stagger between neighbours, as a fraction of one flap
+
+const FLAP = (SLOT * FLIP_SHARE) / (2 + FLAP_LAG * (LONGEST - 1));
+const FLAP_STAGGER = FLAP * FLAP_LAG;
+
+// Each character hinges on its own vanishing point rather than sharing the
+// row's. A single shared perspective fans the row — characters at the edges
+// turning visibly askew while the middle ones turn flat-on — which reads as one
+// solid card being rotated instead of a row of independent flaps.
+const FLAP_PERSPECTIVE = 520;
 
 /**
  * The hem of each curtain.
@@ -79,7 +121,6 @@ const FLIP_AT = PEEL_END - FLIP_DUR + 0.28; // lands just after the last panel c
 const HeroLoader = () => {
     const overlayRef = useRef(null);
     const markRef = useRef(null);
-    const textRef = useRef(null);
     const counterRef = useRef(null);
     const ruleRef = useRef(null);
     const { finishIntro } = useIntro();
@@ -87,25 +128,6 @@ const HeroLoader = () => {
     useGSAP(() => {
         const panels = gsap.utils.toArray(".loader-panel");
         const curves = gsap.utils.toArray(".loader-curve");
-
-        // Paused and never played — only scrubbed from the counter, so 0% is fully
-        // scrambled and 100% is the resolved word by construction. Running it on
-        // its own timer alongside the count would only ever approximate that, and
-        // the two would drift apart the moment either duration changed.
-        const scramble = gsap.to(textRef.current, {
-            duration: 1,
-            ease: "none",
-            paused: true,
-            scrambleText: {
-                text: WORD,
-                chars: SCRAMBLE_CHARS,
-                speed: 0.6,
-                revealDelay: 0,
-                // Hold the full length from the first frame. Letting it tween would
-                // make the word grow out of nothing and shove the layout around.
-                tweenLength: false,
-            },
-        });
 
         const counter = { value: 0 };
         const tl = gsap.timeline();
@@ -117,10 +139,75 @@ const HeroLoader = () => {
             snap: { value: 1 },
             onUpdate: () => {
                 counterRef.current.textContent = counter.value;
-                scramble.progress(counter.value / 100);
                 gsap.set(ruleRef.current, { scaleX: counter.value / 100 });
             },
         }, 0);
+
+        // Every greeting is in the markup from the start, stacked in one box.
+        // Splitting text at runtime would mean tearing these nodes down and
+        // rebuilding them five times mid-timeline; rendering them once means the
+        // tweens hold stable element references for the whole cycle.
+        const rows = gsap.utils.toArray(".loader__greeting");
+        const flapsOf = (row) => row.querySelectorAll(".loader__flap");
+
+        // Face-down everywhere except the opening greeting, which is already
+        // standing. autoAlpha rather than parking them edge-on and leaving them
+        // there: six rows of zero-height glyphs share the same baseline and would
+        // stack into one visible seam across the middle of the screen.
+        rows.forEach((row, i) => {
+            gsap.set(flapsOf(row), {
+                transformPerspective: FLAP_PERSPECTIVE,
+                rotationX: i === 0 ? 0 : 90,
+                autoAlpha: i === 0 ? 1 : 0,
+            });
+        });
+
+        // Placed at absolute beats rather than appended, the same way the peel and
+        // the Flip are scheduled below — so the gap between one transition ending
+        // and the next beginning IS the rest, with no filler tweens to keep in step.
+        //
+        // Deliberately on its own clock rather than scrubbed off the counter.
+        // Scrubbing would map the cycle onto quartInOut's curve, which crawls at
+        // both ends: the opening greeting would hang there, then the middle of the
+        // list would flick past unread. It still cannot drift from the count,
+        // because both are anchored to this timeline and both run COUNT_DURATION.
+        rows.forEach((row, i) => {
+            if (i === 0) return;
+
+            const at = i * SLOT;
+            const falling = flapsOf(rows[i - 1]);
+            const rising = flapsOf(row);
+
+            // Out on `leave`, in on `arrive` — the file's departure/arrival pairing,
+            // which here is also what a hinged flap does under its own weight: it
+            // drops away gathering speed, and the next one slams down and settles.
+            tl.to(falling, {
+                rotationX: -90,
+                duration: FLAP,
+                ease: EASE.leave,
+                stagger: FLAP_STAGGER,
+            }, at)
+                // Handed off exactly one flap in, so each replacement starts
+                // dropping on the frame its predecessor reaches edge-on. Overlap
+                // any more than that and both are briefly face-on in the same spot.
+                .set(rising, { autoAlpha: 1 }, at + FLAP)
+                .to(rising, {
+                    rotationX: 0,
+                    duration: FLAP,
+                    ease: EASE.arrive,
+                    stagger: FLAP_STAGGER,
+                }, at + FLAP)
+                // Once the whole row is edge-on, not per character — anything that
+                // has already fallen is projecting zero height and is invisible
+                // regardless, so one set at the end of the tail is enough.
+                .set(falling, { autoAlpha: 0 }, at + FLAP + FLAP_STAGGER * (falling.length - 1));
+        });
+
+        // The word is home, so drop the 3D entirely. Flip.fit scales this subtree,
+        // and leaving a perspective() on every character means compositing each one
+        // through its own 3D context for the length of that scale — to express a
+        // transform that is identity by now anyway.
+        tl.set(flapsOf(rows[rows.length - 1]), { clearProps: "transform" }, COUNT_DURATION);
 
         tl.to(".loader__meter", {
             opacity: 0,
@@ -223,23 +310,45 @@ const HeroLoader = () => {
               match the heading's, not the loader's own taste — see WORD.
             */}
             <div className="absolute inset-0 z-10 flex items-center justify-center">
+                {/*
+                  Hidden from the accessibility tree wholesale. Every greeting is in
+                  the DOM at once, so without this a screen reader reads the entire
+                  cycle as one run-on line — and the word it ends on is about to be
+                  announced properly by the hero's real heading anyway.
+                */}
                 <div
                     ref={markRef}
+                    aria-hidden="true"
                     className="loader__mark relative grid place-items-center font-lexend text-6xl font-semibold tracking-tighter text-amber-100 md:text-8xl"
                 >
                     {/*
-                      The hidden copy reserves the box at the resolved word's width.
-                      Scramble characters are wider than the real ones, so without it
-                      the centred text would shove itself left and right every frame
-                      — and the Flip would measure a box that keeps changing.
+                      The hidden copy reserves the box at the final word's width, so
+                      the mark measures the same before the cycle as after it. The
+                      greetings sit on top of it absolutely and overflow it
+                      symmetrically — こんにちは is full-width and runs wider than
+                      "Hi there!" — but the box the Flip measures never moves.
                     */}
-                    <span className="invisible" aria-hidden="true">{WORD}</span>
-                    <span
-                        ref={textRef}
-                        className="absolute inset-0 grid place-items-center whitespace-pre"
-                    >
-                        {SEED}
-                    </span>
+                    <span className="invisible">{WORD}</span>
+
+                    {GREETINGS.map((text, i) => (
+                        <span
+                            key={i}
+                            className="loader__greeting absolute inset-0 flex items-center justify-center whitespace-pre"
+                        >
+                            {/*
+                              inline-block because transforms do not apply to inline
+                              boxes at all — a rotationX on a bare glyph is silently
+                              ignored. whitespace-pre on the row is what stops the
+                              space in "Hi there!" collapsing once every character
+                              has become a box of its own.
+                            */}
+                            {[...text].map((char, j) => (
+                                <span key={j} className="loader__flap inline-block">
+                                    {char}
+                                </span>
+                            ))}
+                        </span>
+                    ))}
                 </div>
             </div>
 

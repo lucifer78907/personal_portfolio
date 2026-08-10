@@ -17,9 +17,15 @@ import { EASE } from '../../lib/eases'
 
 const slides = [imagePoloroid, imagePoloroid2, imagePoloroid3, imagePoloroid4, imagePoloroid5];
 
+// The beat between the deck arriving and the deck starting to cycle — long
+// enough that the top polaroid reads as a photograph before it becomes a
+// carousel.
+const AUTOPLAY_REST = 1.5;
+
 const Poloroids = () => {
     const containerRef = useRef(null);
     const introTl = useRef(null);
+    const swiperRef = useRef(null);
     const { introComplete } = useIntro();
     const navigate = useNavigate();
 
@@ -48,7 +54,13 @@ const Poloroids = () => {
                 opacity: 0,
                 duration: 1.5,
                 ease: EASE.arrive,
-            }, 0.8); // holds until the heading has finished, then slides in
+            }, 0.8) // holds until the heading has finished, then slides in
+            // Appended relative to the end of that slide-in, so the deck cannot
+            // start cycling until it has actually finished arriving. The previous
+            // version counted 7s from Swiper's init — which is mount, and mount
+            // happens behind the loader, so the timer was racing an overlay whose
+            // length it knew nothing about. Retime the loader and this still holds.
+            .call(() => swiperRef.current?.autoplay?.start(), null, `+=${AUTOPLAY_REST}`);
     }, { scope: containerRef });
 
     useEffect(() => {
@@ -60,9 +72,12 @@ const Poloroids = () => {
             <Swiper
                 effect={'cards'}
                 onInit={(swiper) => {
+                    swiperRef.current = swiper;
                     ScrollTrigger.refresh();
+                    // Parked here and started from the intro timeline instead, so
+                    // the only clock this deck answers to is the one the rest of
+                    // the hero is on.
                     swiper.autoplay.stop();
-                    setTimeout(() => swiper.autoplay.start(), 7000)
                 }}
                 onSlideChange={(swiper) => {
                     // stop autoplay once we've looped back to the start

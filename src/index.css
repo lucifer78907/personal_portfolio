@@ -1,4 +1,11 @@
-@import url('https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&display=swap');
+/*
+  One request for both families. Noto Sans JP is here only to cover the loader's
+  Japanese greeting — Lexend has no CJK glyphs, so without it こんにちは renders
+  in whatever the OS substitutes. Google serves the family in unicode-range
+  subsets, so the browser fetches only the slice those five characters need
+  rather than the whole face.
+*/
+@import url('https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&family=Noto+Sans+JP:wght@100..900&display=swap');
 
 
 @tailwind base;
