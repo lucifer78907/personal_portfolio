@@ -34,6 +34,32 @@ const CURVE_FLAT = 'M100,0 C100,25 100,75 100,100 Z';
 const CURVE_W = 18;
 const PANEL_PARKED = 100 + CURVE_W;
 
+// Each menu character is a two-faced cube half a line-box deep. Face one sits
+// where the letter normally is; face two hangs directly beneath it looking
+// down. A quarter turn on X rolls face two up into face one's place — and since
+// both faces carry the same glyph, snapping back to 0° afterwards is invisible.
+//
+// Depth is in em so the cube scales with the type, which changes twice across
+// the breakpoints. The parent's perspective is deliberately shallow-ish: each
+// character gets its own vanishing point at its own centre, which is what keeps
+// a long word from skewing away towards one end.
+// backfaceVisibility is load-bearing, not a paranoia flag. At rest the under
+// face is edge-on, and the vanishing point sits at the character's centre —
+// so anything below that centre is seen very slightly from above, which is
+// enough to render the second copy of the word as a sliver under the first.
+// Its normal points away from the viewer, so hiding backfaces removes it, and
+// the roll swaps which face qualifies exactly when it should.
+const CUBE_DEPTH = '0.5em';
+const CUBE_PERSPECTIVE = '12em';
+const FACE_FRONT = {
+    transform: `translateZ(${CUBE_DEPTH})`,
+    backfaceVisibility: 'hidden',
+};
+const FACE_UNDER = {
+    transform: `rotateX(-90deg) translateZ(${CUBE_DEPTH})`,
+    backfaceVisibility: 'hidden',
+};
+
 const PANELS = [
     { bg: '#fde68a' }, // amber-200
     { bg: '#d97706' }, // amber-600
@@ -95,7 +121,49 @@ const Header = () => {
             }, '-=0.7')
             // Burger becomes an X, lines recolour against the dark panel
             .to('.burger-line-1', { y: 4, rotate: 45, backgroundColor: '#fef3c7', duration: 0.5, ease: 'quartInOut' }, 0.15)
-            .to('.burger-line-2', { y: -4, rotate: -45, backgroundColor: '#fef3c7', duration: 0.5, ease: 'quartInOut' }, 0.15);
+            .to('.burger-line-2', { y: -4, rotate: -45, backgroundColor: '#fef3c7', duration: 0.5, ease: 'quartInOut' }, 0.15)
+            // The mask is only needed while the links are flying in. Left on it
+            // would clip the hover wave too, and the wave is the whole reason
+            // the links are split into characters. Being a set() inside the
+            // timeline, closing the menu restores the clip on its own.
+            .set('.menu-mask', { overflow: 'visible' });
+
+        // ── Hover roll ────────────────────────────────────────────────────
+        // Each character turns a quarter of the way round its cube, one beat
+        // after the character before it, so the word rolls across rather than
+        // turning as a block. The wave is the stagger's doing; the turn itself
+        // is deliberate and unbouncy — quartInOut, the site's travel curve,
+        // because a cube face has weight and an overshoot on a solid turning
+        // through 90° reads as a mistake.
+        //
+        // Pointer devices only: on a touchscreen `mouseenter` fires on tap,
+        // which would put an animation between the press and the navigation.
+        gsap.matchMedia().add('(min-width: 768px) and (hover: hover)', () => {
+            const links = gsap.utils.toArray('.menu-link');
+
+            const roll = (e) => {
+                const cubes = gsap.utils.toArray('.menu-cube', e.currentTarget);
+                // Re-entering mid-roll starts over from face one rather than
+                // stacking a second turn on a cube already partway round.
+                gsap.killTweensOf(cubes);
+                gsap.set(cubes, { rotationX: 0 });
+
+                gsap.to(cubes, {
+                    rotationX: 90,
+                    duration: 0.44,
+                    ease: EASE.travel,
+                    stagger: 0.03,
+                    // Back to face one once the whole word has landed. Both
+                    // faces carry the same glyph so there's nothing to see —
+                    // and it keeps the cube from ever passing 90°, where face
+                    // one would come round backwards.
+                    onComplete: () => gsap.set(cubes, { rotationX: 0 }),
+                });
+            };
+
+            links.forEach((l) => l.addEventListener('mouseenter', roll));
+            return () => links.forEach((l) => l.removeEventListener('mouseenter', roll));
+        });
     }, { scope: rootRef });
 
     useEffect(() => {
@@ -136,7 +204,7 @@ const Header = () => {
                 ref={overlayRef}
                 className="fixed inset-0 z-[110] overflow-hidden pointer-events-none"
             >
-                {PANELS.map(({ bg }, i) => (
+                {PANELS.map(({ bg }) => (
                     <div
                         key={bg}
                         className="menu-panel absolute inset-0"
@@ -156,15 +224,39 @@ const Header = () => {
 
                 <nav className="absolute inset-0 flex flex-col justify-center gap-1 px-10 md:px-24">
                     {NAV_ITEMS.map(({ to, label }) => (
-                        <span key={to} className="block overflow-hidden py-1">
+                        <span key={to} className="menu-mask block overflow-hidden py-1">
                             <NavLink
                                 to={to}
+                                /* The characters are split for the hover wave,
+                                   so the link needs its name stated once rather
+                                   than spelled out a span at a time. */
+                                aria-label={label}
                                 className={({ isActive }) =>
                                     `menu-link block font-lexend font-semibold tracking-tighter text-5xl md:text-7xl xl:text-8xl w-max transition-colors duration-300 ${isActive ? 'text-amber-500' : 'text-amber-50 hover:text-amber-400'
                                     }`
                                 }
                             >
-                                {label}
+                                {/* Split here rather than with SplitText: these
+                                    are React-owned nodes, and a plugin
+                                    rewriting innerHTML underneath a NavLink
+                                    that re-renders on every route change is a
+                                    fight waiting to happen. */}
+                                {[...label].map((ch, i) => (
+                                    <span
+                                        key={`${ch}-${i}`}
+                                        aria-hidden="true"
+                                        className="menu-char inline-block whitespace-pre"
+                                        style={{ perspective: CUBE_PERSPECTIVE }}
+                                    >
+                                        <span
+                                            className="menu-cube relative inline-block"
+                                            style={{ transformStyle: 'preserve-3d' }}
+                                        >
+                                            <span className="block" style={FACE_FRONT}>{ch}</span>
+                                            <span className="absolute inset-0 block" style={FACE_UNDER}>{ch}</span>
+                                        </span>
+                                    </span>
+                                ))}
                             </NavLink>
                         </span>
                     ))}
