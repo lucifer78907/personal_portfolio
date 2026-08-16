@@ -34,9 +34,27 @@ const RootLayout = () => {
         const smoother = ScrollSmoother.create({
             wrapper: '#smooth-wrapper',
             content: '#smooth-content',
-            smooth: 1.5,           // seconds for content to catch up to native scroll
-            effects: true,         // enables data-speed / data-lag on any element
-            normalizeScroll: true, // steadier mobile scroll, no address-bar resize jumps
+            smooth: 1.5,   // seconds for content to catch up — pointer devices only
+            effects: true, // enables data-speed / data-lag on any element
+
+            // Touch scrolling is left entirely alone.
+            //
+            // normalizeScroll intercepts touch and re-implements scrolling in
+            // JavaScript. It was here to stop the address bar showing/hiding
+            // from jolting the page, but the price is the platform's own
+            // momentum and rubber-banding — which is exactly what "smooth"
+            // means on a phone. Running every scroll frame through JS to
+            // approximate what the OS already does for free is why it felt
+            // worse, not better.
+            //
+            // ignoreMobileResize solves the address-bar problem on its own:
+            // ScrollTrigger stops refreshing on the resize events that a
+            // collapsing toolbar fires, without touching the scroll itself.
+            //
+            // smoothTouch is deliberately left at its default of 0. Desktop
+            // keeps the 1.5s glide; mobile is native.
+            normalizeScroll: false,
+            ignoreMobileResize: true,
         });
 
         return () => smoother.kill();

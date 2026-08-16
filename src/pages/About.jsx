@@ -591,7 +591,17 @@ const About = () => {
                                pre-filled instead, because posOf() clamps
                                anything already left of centre to the start of
                                the travel. */
-                            className="statement font-lexend font-medium tracking-tighter px-6 leading-[1.08] md:whitespace-nowrap md:pl-[14vw] md:pr-[50vw] md:leading-none"
+                            /* leading-[1.34] below md, not 1.08.
+
+                               The banners are inline-block with py-[0.04em] and
+                               a background painted at inset-0, so their boxes are
+                               TALLER than the type they hold. At 1.08 the line
+                               box is shorter than the banner, and on a phone —
+                               where this sentence wraps to five or six lines
+                               instead of running as one — consecutive banners
+                               overlapped each other. Desktop never showed it
+                               because desktop never wraps. */
+                            className="statement font-lexend font-medium tracking-tighter px-6 leading-[1.34] md:whitespace-nowrap md:pl-[14vw] md:pr-[50vw] md:leading-none"
                             style={{ fontSize: STATEMENT_SIZE }}
                         >
                             {TOKENS.map((t, i) => (
@@ -665,7 +675,10 @@ const About = () => {
                 </div>
 
                 <PageColumn>
-                    <div className="impact-row px-6 md:px-10 mt-40 grid grid-cols-2 md:grid-cols-4 gap-10 border-t border-amber-900/15 pt-12">
+                    {/* mt-40 was measured against where the desktop pin
+                        releases. On mobile there is no pin, so it was 160px of
+                        nothing. */}
+                    <div className="impact-row px-6 md:px-10 mt-16 md:mt-40 grid grid-cols-2 md:grid-cols-4 gap-10 border-t border-amber-900/15 pt-12">
                         {IMPACT.map(({ to, suffix, label }) => (
                             <div key={label}>
                                 <p
@@ -686,11 +699,15 @@ const About = () => {
                         <p className="reveal font-lexend text-[11px] uppercase tracking-[0.35em] text-amber-700/60 mb-10">Where</p>
                         {CREDITS.map(({ company, period, work }) => (
                             <div key={company} className="reveal border-t border-amber-900/15 py-8">
-                                <div className="flex items-baseline justify-between gap-6">
+                                {/* Stacked below md: a 2xl company name and its
+                                    period on one baseline crowds badly at 360px,
+                                    where "Initializ Technologies" alone is most
+                                    of the width. */}
+                                <div className="flex flex-col gap-1 md:flex-row md:items-baseline md:justify-between md:gap-6">
                                     <h2 className="font-lexend text-2xl md:text-4xl font-semibold tracking-tighter text-amber-950">{company}</h2>
                                     <p className="font-lexend text-xs uppercase tracking-[0.18em] text-amber-700/60 shrink-0">{period}</p>
                                 </div>
-                                <p className="mt-4 font-lexend text-sm md:text-base leading-relaxed text-amber-950/70 max-w-4xl">{work}</p>
+                                <p className="mt-4 font-lexend text-[15px] md:text-base leading-relaxed text-amber-950/70 max-w-4xl">{work}</p>
                             </div>
                         ))}
                     </div>
@@ -700,7 +717,7 @@ const About = () => {
                         {TOOLKIT.map(({ group, items }) => (
                             <div key={group} className="reveal grid md:grid-cols-[1fr_3fr] gap-2 md:gap-12 border-t border-amber-900/15 py-6">
                                 <p className="font-lexend text-sm font-semibold uppercase tracking-[0.14em] text-amber-800">{group}</p>
-                                <p className="font-lexend text-sm md:text-base text-amber-950/75 leading-relaxed">{items}</p>
+                                <p className="font-lexend text-[15px] md:text-base text-amber-950/75 leading-relaxed">{items}</p>
                             </div>
                         ))}
                     </div>

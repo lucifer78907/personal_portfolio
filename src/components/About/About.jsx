@@ -3,9 +3,10 @@ import { Link } from 'react-router-dom';
 import { useGSAP } from '@gsap/react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { SplitText } from 'gsap/SplitText';
 import { EASE } from '../../lib/eases';
 
-gsap.registerPlugin(ScrollTrigger);
+gsap.registerPlugin(ScrollTrigger, SplitText);
 
 /**
  * Two readings of the same sentence, stacked.
@@ -36,7 +37,10 @@ const TRUTH_TAIL = 'until the bug goes away and call it a refactor.';
 // weight — and the shared opening stops registering, which is the one thing
 // this section cannot survive. They are constants precisely so the two JSX
 // blocks below cannot drift apart under later editing.
-const LAYER = 'absolute inset-0 flex items-start pt-[20vh] md:pt-[26vh]';
+// Absolutely stacked from md up, where one layer is masked over the other.
+// Below md they leave the stack and become two ordinary blocks, one after the
+// other — which is what lets the section work on a phone without the aperture.
+const LAYER = 'relative py-20 md:absolute md:inset-0 md:flex md:items-start md:pt-[26vh]';
 const BOX = 'w-full max-w-[min(92vw,1080px)] mx-auto px-6 md:px-10';
 const EYEBROW = 'font-lexend text-[11px] uppercase tracking-[0.35em] mb-6 md:mb-8';
 const STATEMENT = 'font-lexend font-semibold tracking-tighter leading-[1.08]';
@@ -98,18 +102,68 @@ const About = () => {
             );
         };
 
-        // Exactly one of these matches at any time, so the section always gets
-        // a branch — a lone `reduce` condition would leave everyone else with
-        // no timeline at all, since matchMedia only runs a context that matches.
+        // The motion pair is here so the section always gets a branch: a lone
+        // `reduce` condition would leave everyone else with no timeline at all,
+        // since matchMedia only runs a context that matches.
         gsap.matchMedia().add({
             motion: '(prefers-reduced-motion: no-preference)',
             reduced: '(prefers-reduced-motion: reduce)',
+            wide: '(min-width: 768px)',
         }, (ctx) => {
-            if (ctx.conditions.reduced) {
-                // No pin, no growth, no reveal. The honest statement simply is.
+            const { reduced, wide } = ctx.conditions;
+
+            // Mobile gets no aperture, and this is a performance decision
+            // rather than a layout one. The effect is a pinned viewport
+            // scrubbing a clip-path circle, and clip-path repaints the entire
+            // layer on every frame it changes — the single most expensive thing
+            // on the page, pinned, on the weakest hardware. It was the largest
+            // cause of scrolling feeling wrong on a phone.
+            //
+            // Nothing is lost but the reveal: below md the two layers fall out
+            // of their absolute stack and sit one above the other, so you read
+            // the polished sentence and then the honest one. The joke survives;
+            // scrolling past is what tells it.
+            if (reduced) {
                 gsap.set(dark, { clipPath: 'none' });
                 gsap.set(portal, { autoAlpha: 1, y: 0 });
                 return;
+            }
+
+            if (!wide) {
+                gsap.set(dark, { clipPath: 'none' });
+
+                // Each statement arrives a line at a time as it scrolls in.
+                // mask:'lines' wraps every line in its own clipped box, so a
+                // line rises out of nothing rather than sliding in from over
+                // whatever sits above it.
+                const splits = gsap.utils.toArray('.stmt').map((el) => {
+                    const split = SplitText.create(el, { type: 'lines', mask: 'lines' });
+
+                    gsap.from(split.lines, {
+                        yPercent: 110,
+                        duration: 0.85,
+                        stagger: 0.09,
+                        ease: EASE.arrive,
+                        scrollTrigger: { trigger: el, start: 'top 88%', once: true },
+                    });
+
+                    return split;
+                });
+
+                gsap.from(portal, {
+                    autoAlpha: 0,
+                    y: 16,
+                    duration: 0.7,
+                    ease: EASE.text,
+                    scrollTrigger: { trigger: portal, start: 'top 92%', once: true },
+                });
+                gsap.set(portal, { autoAlpha: 1 });
+
+                // SplitText rewrites the element's innerHTML, and matchMedia
+                // only reverts GSAP animations — not DOM surgery. Without this,
+                // resizing past md would leave the desktop branch measuring a
+                // word wrapped in line divs that its ref no longer points at.
+                return () => splits.forEach((s) => s.revert());
             }
 
             let cover = measure();
@@ -158,9 +212,12 @@ const About = () => {
 
     return (
         <section ref={containerRef} className="relative">
+            {/* One viewport, pinned, only from md up. Below that it is an
+                ordinary block whose height is whatever the two stacked
+                statements need. */}
             <div
                 ref={pinRef}
-                className="about-pin relative h-[100svh] w-full overflow-hidden"
+                className="about-pin relative w-full md:h-[100svh] md:overflow-hidden"
             >
                 {/*
                   The surface. Hidden from the accessibility tree wholesale:
@@ -171,7 +228,7 @@ const About = () => {
                 <div className={LAYER} aria-hidden="true">
                     <div className={BOX}>
                         <p className={`${EYEBROW} text-amber-700/60`}>About</p>
-                        <p className={STATEMENT} style={{ fontSize: STATEMENT_SIZE, color: '#451a03' }}>
+                        <p className={`stmt ${STATEMENT}`} style={{ fontSize: STATEMENT_SIZE, color: '#451a03' }}>
                             <span className="block">{OPENING}</span>
                             <span className="block">
                                 I architect{' '}
@@ -204,7 +261,7 @@ const About = () => {
                 >
                     <div className={BOX}>
                         <p className={`${EYEBROW} text-amber-400/70`}>Actually</p>
-                        <p className={STATEMENT} style={{ fontSize: STATEMENT_SIZE, color: '#fffbeb' }}>
+                        <p className={`stmt ${STATEMENT}`} style={{ fontSize: STATEMENT_SIZE, color: '#fffbeb' }}>
                             <span className="block">{OPENING}</span>
                             <span className="block">
                                 I rename <span className="text-amber-400">variables</span> {TRUTH_TAIL}
