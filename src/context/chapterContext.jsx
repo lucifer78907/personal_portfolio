@@ -1,5 +1,5 @@
-import { createContext, useCallback, useContext, useMemo, useRef, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { useBlocker, useLocation, useNavigate } from 'react-router-dom';
 import { useGSAP } from '@gsap/react';
 import gsap from 'gsap';
 import { createShapeOverlay, WORD_DURATION } from '../lib/shapeOverlay';
@@ -102,7 +102,15 @@ export const ChapterProvider = ({ children }) => {
         overlayRef.current.draw();
     }, { scope: rootRef });
 
-    const go = useCallback((label, to) => {
+    /**
+     * Cover, do the thing, uncover.
+     *
+     * `action` is either a path to navigate to, or a function to run at full
+     * cover. The function form is what lets a browser Back — which has already
+     * been intercepted and held — be released at exactly the same moment in the
+     * sweep as a normal navigation happens.
+     */
+    const go = useCallback((label, action) => {
         const overlay = overlayRef.current;
         if (!overlay) return;
 
@@ -140,7 +148,8 @@ export const ChapterProvider = ({ children }) => {
         // Covered. Swap the route, put the points back to 100, and flip which
         // side of the curve is solid so the next sweep empties through the top.
         tl.call(() => {
-            navigate(to);
+            if (typeof action === 'function') action();
+            else navigate(action);
             overlay.reset();
             overlay.setCovering(false);
         }, null, overlay.span + HOLD);
@@ -153,6 +162,40 @@ export const ChapterProvider = ({ children }) => {
         // rather than decelerating into the finish like an arrival would.
         tl.to(mark, { yPercent: -110, duration: 0.5, ease: EASE.leave }, overlay.span + HOLD);
     }, [navigate]);
+
+    /**
+     * Browser Back, and the phone's edge-swipe, get the same treatment.
+     *
+     * Those are POP navigations — no click of ours to hang a handler off — so
+     * without this they teleport while every other move on the site sweeps, and
+     * the one you reach for most often is the one that feels broken.
+     *
+     * useBlocker holds the navigation in a "blocked" state until proceed() is
+     * called, which is exactly the hook this needs: the transition starts, and
+     * the held navigation is released at full cover along with everything else.
+     * It is available because App.jsx uses createBrowserRouter — a data router.
+     *
+     * PUSH navigations are not blocked: those are our own links, which already
+     * come through go() and would otherwise be intercepted a second time.
+     */
+    const blocker = useBlocker(
+        useCallback(({ currentLocation, nextLocation, historyAction }) => (
+            historyAction === 'POP' && currentLocation.pathname !== nextLocation.pathname
+        ), []),
+    );
+
+    useEffect(() => {
+        if (blocker.state !== 'blocked') return;
+
+        // Already mid-sweep: let it through rather than stacking a second
+        // transition on top of the first.
+        if (busy.current) {
+            blocker.proceed();
+            return;
+        }
+
+        go(wordFor(blocker.location.pathname), () => blocker.proceed());
+    }, [blocker, go]);
 
     const value = useMemo(() => ({ go }), [go]);
 

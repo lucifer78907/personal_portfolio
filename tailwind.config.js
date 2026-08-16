@@ -4,6 +4,17 @@ export default {
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
+  future: {
+    // Wraps every `hover:` utility in @media (hover: hover), so hover styles
+    // never fire on a touchscreen.
+    //
+    // Without it a tap triggers :hover and then LEAVES IT ON until you tap
+    // something else — so a skill card on the rail would open its dark face and
+    // stay that way. Set here rather than guarding each utility with `md:`,
+    // because the problem is the input device and not the viewport width: a
+    // touchscreen laptop is wide and still cannot hover.
+    hoverOnlyWhenSupported: true,
+  },
   theme: {
     extend: {
        fontFamily: {

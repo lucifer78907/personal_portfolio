@@ -1,13 +1,15 @@
 import { useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useGSAP } from '@gsap/react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { ScrollSmoother } from 'gsap/ScrollSmoother';
 import { DrawSVGPlugin } from 'gsap/DrawSVGPlugin';
 import { SplitText } from 'gsap/SplitText';
 import { EASE } from '../../lib/eases';
 import { SKILLS } from '../../lib/skills';
 import { setPendingTransition } from '../../lib/pageTransition';
+import { rememberScroll } from '../../lib/scrollMemory';
 
 gsap.registerPlugin(ScrollTrigger, DrawSVGPlugin, SplitText);
 
@@ -91,6 +93,7 @@ const Skills = () => {
     const gradsRef = useRef([]);
     const pulsesRef = useRef([]);
     const navigate = useNavigate();
+    const { pathname } = useLocation();
 
     // The icon is the shared element, so the rect handed across is the icon's,
     // not the card's — the destination page lands an icon, and measuring the
@@ -98,12 +101,17 @@ const Skills = () => {
     //
     // The hover face's icon first, because a click can only happen while that
     // face is up, and the two faces put their icons in different places. Falling
-    // back to the resting one covers keyboard activation, where nothing is
-    // hovered at all.
+    // back to the resting one covers a tap on the rail, and keyboard
+    // activation, where nothing is hovered at all.
     const open = (e, skill) => {
         const icon = e.currentTarget.querySelector('.skill-icon-hover')
             || e.currentTarget.querySelector('.skill-icon');
         if (!icon) return;
+
+        // The board sits near the bottom of a long page. Without this, coming
+        // back from a skill lands you at the top of the home page with the board
+        // you were reading somewhere below the fold.
+        rememberScroll(pathname, ScrollSmoother.get()?.scrollTop() ?? window.scrollY);
         const { top, left, width, height } = icon.getBoundingClientRect();
         setPendingTransition({ kind: 'skill', slug: skill.slug, rect: { top, left, width, height } });
         navigate(`/skills/${skill.slug}`);

@@ -8,6 +8,7 @@ import Header from '../components/Header';
 import Seo from '../components/Seo';
 import HeroLoader from '../components/Loader';
 import { ChapterProvider } from '../context/chapterContext';
+import { takeScroll } from '../lib/scrollMemory';
 
 gsap.registerPlugin(useGSAP, ScrollTrigger, ScrollSmoother);
 
@@ -46,11 +47,44 @@ const RootLayout = () => {
         return () => smoother.kill();
     });
 
-    // A new route means new content height and a stale scroll position.
+    // A new route means new content height and a stale scroll position — so the
+    // top, unless this is a return to somewhere we recorded on the way out (see
+    // lib/scrollMemory.js), in which case put them back where they were.
+    //
+    // ORDER IS LOAD-BEARING: top first, then refresh, then restore. Never the
+    // other way round. ScrollTrigger.refresh() re-measures every pinned section
+    // and computes its pin-spacer against wherever the page currently sits, so
+    // refreshing while already scrolled deep into a route whose content has only
+    // just mounted leaves the spacers sized against a layout that does not exist
+    // yet — and the page comes back blank, with its content stranded off-screen.
+    //
+    // Two frames, not one: the first lets the incoming route paint so refresh()
+    // has real heights to measure, the second lets those heights settle before
+    // the position is read back. All of it happens under the chapter card's
+    // cover, so none of it is visible.
     useEffect(() => {
+        const y = takeScroll(pathname);
         ScrollSmoother.get()?.scrollTo(0, false);
-        const id = requestAnimationFrame(() => ScrollTrigger.refresh());
-        return () => cancelAnimationFrame(id);
+
+        let second = 0;
+        const first = requestAnimationFrame(() => {
+            ScrollTrigger.refresh();
+            if (y == null) return;
+
+            second = requestAnimationFrame(() => {
+                const smoother = ScrollSmoother.get();
+                if (!smoother) return;
+                // Clamped: the page being returned to can be shorter than it was
+                // on the way out, and scrolling past its end is the same blank
+                // screen by a different route.
+                smoother.scrollTo(Math.min(y, ScrollTrigger.maxScroll(window)), false);
+            });
+        });
+
+        return () => {
+            cancelAnimationFrame(first);
+            cancelAnimationFrame(second);
+        };
     }, [pathname]);
 
     return (
