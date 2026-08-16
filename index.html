@@ -3,7 +3,79 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>tsx.rudra</title>
+
+    <!--
+      Icons. No favicon.svg on purpose: the generated one is a 1.4 MB base64 PNG
+      in an SVG wrapper rather than a real vector, and browsers PREFER an
+      image/svg+xml icon when one is offered — so linking it would cost every
+      visitor 1.4 MB for a 16px tab icon. The ICO and the 96px PNG cover
+      everything, and Google reads /favicon.ico from the root for search results.
+    -->
+    <link rel="icon" href="/favicon.ico" sizes="32x32" />
+    <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <meta name="theme-color" content="#fffbeb" />
+
+    <!--
+      EVERYTHING BETWEEN THE MARKERS IS GENERATED. Do not hand-edit it — the
+      copy lives in src/lib/seo.js, and scripts/generate-seo.mjs rewrites this
+      block once per route after the Vite build, producing a separate HTML file
+      per page with that page's own title, description and card.
+
+      That per-route HTML is the whole point: Twitter, LinkedIn, Slack, WhatsApp
+      and Discord read raw HTML and never execute scripts, so a single-page app
+      previews every shared link identically no matter what the client-side code
+      does to document.head afterwards.
+
+      What is written below is the "/" route's values, which is also what `vite
+      dev` serves, since the generator only runs against dist.
+    -->
+    <!--seo:start-->
+    <title>Rudra Pratap Singh — Software Engineer</title>
+    <meta
+      name="description"
+      content="Software engineer building fintech that moves money, AI products that do real work, and the agentic workflows running quietly underneath them."
+    />
+    <link rel="canonical" href="https://thesinghrudra.com/" />
+    <meta name="robots" content="index, follow" />
+    <meta name="author" content="Rudra Pratap Singh" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Rudra Pratap Singh" />
+    <meta property="og:title" content="Rudra Pratap Singh — Software Engineer" />
+    <meta
+      property="og:description"
+      content="Software engineer building fintech that moves money, AI products that do real work, and the agentic workflows running quietly underneath them."
+    />
+    <meta property="og:url" content="https://thesinghrudra.com/" />
+    <meta property="og:image" content="https://thesinghrudra.com/web-app-manifest-512x512.png" />
+
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="Rudra Pratap Singh — Software Engineer" />
+    <meta
+      name="twitter:description"
+      content="Software engineer building fintech that moves money, AI products that do real work, and the agentic workflows running quietly underneath them."
+    />
+    <meta name="twitter:image" content="https://thesinghrudra.com/web-app-manifest-512x512.png" />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Person",
+        "name": "Rudra Pratap Singh",
+        "url": "https://thesinghrudra.com",
+        "image": "https://thesinghrudra.com/web-app-manifest-512x512.png",
+        "jobTitle": "Software Engineer",
+        "email": "mailto:thesinghrudra@gmail.com",
+        "description": "Software engineer building fintech that moves money, AI products that do real work, and the agentic workflows running quietly underneath them.",
+        "sameAs": [
+          "https://github.com/lucifer78907",
+          "https://www.linkedin.com/in/thesinghrudra/"
+        ]
+      }
+    </script>
+    <!--seo:end-->
   </head>
   <body>
     <div id="root"></div>

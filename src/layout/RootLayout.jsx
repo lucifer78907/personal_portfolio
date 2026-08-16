@@ -5,6 +5,7 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { ScrollSmoother } from 'gsap/ScrollSmoother';
 import Header from '../components/Header';
+import Seo from '../components/Seo';
 // import HeroLoader from '../components/Loader';
 import { useIntro } from '../context/introContext';
 
@@ -55,6 +56,11 @@ const RootLayout = () => {
               ScrollSmoother transforms that element, which makes fixed/sticky
               children resolve against it instead of the viewport.
             */}
+            {/* Renders nothing; keeps document.head in step with the route on
+                client-side navigation. The served HTML already carries the
+                right tags per page — see scripts/generate-seo.mjs. */}
+            <Seo />
+
             {/* TEMPORARY — disabled for development. Restore together with the
                 useEffect above that stands in for its finishIntro() call. */}
             {/* <HeroLoader /> */}

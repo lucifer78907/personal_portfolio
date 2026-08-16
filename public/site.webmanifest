@@ -1,0 +1,30 @@
+{
+  "name": "Rudra Pratap Singh — Software Engineer",
+  "short_name": "Rudra",
+  "description": "Software engineer building fintech that moves money, AI products that do real work, and the agentic workflows running underneath them.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#fffbeb",
+  "theme_color": "#451a03",
+  "icons": [
+    {
+      "src": "/web-app-manifest-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/web-app-manifest-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/web-app-manifest-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
