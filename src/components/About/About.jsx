@@ -5,6 +5,7 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { SplitText } from 'gsap/SplitText';
 import { EASE } from '../../lib/eases';
+import { useChapterNav } from '../../context/chapterContext';
 
 gsap.registerPlugin(ScrollTrigger, SplitText);
 
@@ -65,6 +66,7 @@ const About = () => {
     const darkRef = useRef(null);
     const originRef = useRef(null);
     const portalRef = useRef(null);
+    const chapterNav = useChapterNav();
 
     useGSAP(() => {
         const pin = pinRef.current;
@@ -271,6 +273,7 @@ const About = () => {
                         <Link
                             ref={portalRef}
                             to="/about"
+                            onClick={chapterNav('/about')}
                             /* invisible until the timeline's autoAlpha takes
                                over, so it can't flash before the aperture has
                                opened far enough to hold it. */

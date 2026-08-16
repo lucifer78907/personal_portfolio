@@ -8,6 +8,7 @@ import { ScrollSmoother } from 'gsap/ScrollSmoother';
 import PageColumn from '../components/PageColumn';
 import { skillBySlug } from '../lib/skills';
 import { peekPendingTransition, clearPendingTransition } from '../lib/pageTransition';
+import { useChapterNav } from '../context/chapterContext';
 import { EASE } from '../lib/eases';
 
 gsap.registerPlugin(Flip, SplitText);
@@ -25,6 +26,7 @@ const SkillDetail = () => {
     const containerRef = useRef(null);
     const destRef = useRef(null);
     const flyerRef = useRef(null);
+    const chapterNav = useChapterNav();
 
     // Read during render, not in an effect: the flyer has to be positioned on
     // the very first paint or the icon visibly jumps from the top-left corner
@@ -167,12 +169,14 @@ const SkillDetail = () => {
                         <div className="skill-reveal mt-20 flex flex-wrap gap-8">
                             <Link
                                 to="/"
+                                onClick={chapterNav('/')}
                                 className="font-lexend text-sm uppercase tracking-[0.2em] text-amber-700 hover:text-amber-900 transition-colors duration-300"
                             >
                                 ← back to the board
                             </Link>
                             <Link
                                 to="/about"
+                                onClick={chapterNav('/about')}
                                 className="font-lexend text-sm uppercase tracking-[0.2em] text-amber-700 hover:text-amber-900 transition-colors duration-300"
                             >
                                 the whole toolkit →

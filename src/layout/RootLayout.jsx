@@ -8,6 +8,7 @@ import Header from '../components/Header';
 import Seo from '../components/Seo';
 // import HeroLoader from '../components/Loader';
 import { useIntro } from '../context/introContext';
+import { ChapterProvider } from '../context/chapterContext';
 
 gsap.registerPlugin(useGSAP, ScrollTrigger, ScrollSmoother);
 
@@ -68,7 +69,10 @@ const RootLayout = () => {
     }, [pathname]);
 
     return (
-        <>
+        // Inside the router, because the transition navigates; outside
+        // #smooth-content, because its overlay is position:fixed. Both are
+        // satisfied here and nowhere else.
+        <ChapterProvider>
             {/*
               Anything position:fixed MUST live outside #smooth-content.
               ScrollSmoother transforms that element, which makes fixed/sticky
@@ -99,7 +103,7 @@ const RootLayout = () => {
                     </main>
                 </div>
             </div>
-        </>
+        </ChapterProvider>
     );
 };
 

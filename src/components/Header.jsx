@@ -5,6 +5,7 @@ import gsap from 'gsap';
 import { MorphSVGPlugin } from 'gsap/MorphSVGPlugin';
 import { ScrollSmoother } from 'gsap/ScrollSmoother';
 import { useIntro } from '../context/introContext';
+import { useChapterNav } from '../context/chapterContext';
 import { EASE } from '../lib/eases'; // registers quartInOut / expoOut / quintOut
 
 gsap.registerPlugin(MorphSVGPlugin);
@@ -74,6 +75,12 @@ const Header = () => {
     const [open, setOpen] = useState(false);
     const { introComplete } = useIntro();
     const { pathname } = useLocation();
+    const chapterNav = useChapterNav();
+
+    // Whether the next close should be instant (navigation, under the chapter
+    // card) or animated (Escape, or the burger).
+    const snapClose = useRef(false);
+    const openRef = useRef(false);
 
     useGSAP(() => {
         const panels = gsap.utils.toArray('.menu-panel');
@@ -173,9 +180,27 @@ const Header = () => {
     useEffect(() => {
         const tl = menuTl.current;
         if (!tl) return;
-        open ? tl.play() : tl.reverse();
+
+        if (open) {
+            tl.timeScale(1).play();
+        } else {
+            // A close caused by navigating happens underneath the chapter card,
+            // so its animation is not only invisible but actively wrong: the
+            // reverse runs about 1.5s from full cover, which outlives the
+            // uncover sweep, and the last of it plays in the open on the page
+            // you just arrived at. Snapping it shut costs nothing — the site
+            // already has a transition covering this move, and this is a second
+            // one competing with it.
+            //
+            // Still tl.reverse(), just at 40×, so the end state is identical to
+            // an ordinary close rather than a second code path that can drift.
+            tl.timeScale(snapClose.current ? 40 : 1).reverse();
+            snapClose.current = false;
+        }
+
         // The page behind must not scroll while the overlay is up.
         ScrollSmoother.get()?.paused(open);
+        openRef.current = open;
     }, [open]);
 
     useEffect(() => {
@@ -184,8 +209,16 @@ const Header = () => {
         return () => window.removeEventListener('keydown', onKey);
     }, []);
 
-    // Navigating closes the menu.
-    useEffect(() => setOpen(false), [pathname]);
+    // Navigating closes the menu — instantly, and only if it was actually open.
+    //
+    // Guarded on a ref rather than on `open` itself so this effect stays keyed
+    // to pathname alone. Reading `open` here would either need it in the deps,
+    // firing the close on every toggle, or go stale.
+    useEffect(() => {
+        if (!openRef.current) return;
+        snapClose.current = true;
+        setOpen(false);
+    }, [pathname]);
 
     return (
         <div ref={rootRef}>
@@ -227,6 +260,10 @@ const Header = () => {
                         <span key={to} className="menu-mask block overflow-hidden py-1">
                             <NavLink
                                 to={to}
+                                /* The chapter card covers the screen before the
+                                   route swaps, so the menu's own close (driven
+                                   off pathname, below) happens out of sight. */
+                                onClick={chapterNav(to)}
                                 /* The characters are split for the hover wave,
                                    so the link needs its name stated once rather
                                    than spelled out a span at a time. */
