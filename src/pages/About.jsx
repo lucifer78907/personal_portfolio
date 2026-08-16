@@ -162,11 +162,10 @@ const WORD_FX = {
 
 const fxKey = (el) => el.textContent.toLowerCase().replace(/[^a-z]/g, '');
 
-// Hard-stop gradient: LIT up to --p, UNLIT immediately after. No soft edge —
-// that's what makes it read as a bar filling rather than a fade. --p is
-// unitless so GSAP can interpolate it as a plain number.
-const FILL_GRADIENT =
-    `linear-gradient(90deg, ${LIT} 0%, ${LIT} calc(var(--p) * 1%), ${UNLIT} calc(var(--p) * 1%), ${UNLIT} 100%)`;
+// The fill is now a second copy of each word revealed by width, built in the
+// effect below — see the note there. It replaced a hard-stop
+// `background-clip: text` gradient, which iOS Safari refuses to paint at all
+// once an ancestor is composited.
 
 const About = () => {
     const containerRef = useRef(null);
@@ -247,20 +246,56 @@ const About = () => {
         words.forEach((w) => {
             w.style.display = 'inline-block';
 
-            if (WORD_FX[fxKey(w)]) {
-                // Animated words are painted solid — the gradient fill is the
-                // *other* treatment, and running both would fight each other.
+            // Stamped now, before the fill copy below is appended — after that
+            // the word's textContent is doubled ("moneymoney") and every later
+            // lookup would miss.
+            w.dataset.fx = WORD_FX[fxKey(w)] ?? '';
+
+            if (w.dataset.fx) {
+                // Animated words are painted solid — the fill is the *other*
+                // treatment, and running both would fight each other.
                 w.style.color = LIT;
-                if (WORD_FX[fxKey(w)] === 'flip') w.style.perspective = '600px';
+                if (w.dataset.fx === 'flip') w.style.perspective = '600px';
                 return;
             }
 
-            // Everything else is its own little progress bar.
-            w.style.setProperty('--p', '0');
-            w.style.backgroundImage = FILL_GRADIENT;
-            w.style.webkitBackgroundClip = 'text';
-            w.style.backgroundClip = 'text';
-            w.style.color = 'transparent';
+            /**
+             * Everything else is its own little progress bar.
+             *
+             * A second copy of the word in the lit colour, laid exactly over the
+             * unlit one and revealed by growing its width inside an
+             * overflow-hidden box. The fill point is the box's right edge.
+             *
+             * This used to be one element with a hard-stop gradient and
+             * `background-clip: text`, which is the tidier technique and is
+             * broken on iOS Safari: it stops painting entirely when an ancestor
+             * is composited, and the track above carries will-change:transform,
+             * so on iPhone the plain words vanished while the banner words — which
+             * never used the fill — stayed. Half a sentence, missing.
+             *
+             * Width and overflow have no such caveat anywhere. The copy is
+             * absolutely positioned, so it adds nothing to the line's measured
+             * width, and aria-hidden so the sentence is not read out twice.
+             */
+            w.style.position = 'relative';
+            w.style.color = UNLIT;
+
+            const lit = document.createElement('span');
+            lit.className = 'stmt-fill';
+            lit.textContent = w.textContent;
+            lit.setAttribute('aria-hidden', 'true');
+            Object.assign(lit.style, {
+                position: 'absolute',
+                top: '0',
+                left: '0',
+                height: '100%',
+                width: '0%',
+                overflow: 'hidden',
+                whiteSpace: 'pre',
+                color: LIT,
+                pointerEvents: 'none',
+            });
+            w.appendChild(lit);
         });
 
         // ── One-way effects ──────────────────────────────────────────────
@@ -303,14 +338,18 @@ const About = () => {
         };
 
         words.forEach((w) => {
-            const fx = WORD_FX[fxKey(w)];
+            const fx = w.dataset.fx;
             const open = isOpen(w);
 
             if (!fx) {
-                effect(w, 0, (t) => t.to(w, { '--p': 100, duration: 0.45, ease: 'none' }), { open });
+                // The fill copy's width IS the fill point.
+                const lit = w.querySelector('.stmt-fill');
+                effect(w, 0, (t) => t.to(lit, { width: '100%', duration: 0.45, ease: 'none' }), { open });
                 return;
             }
 
+            // The fill copy is never appended to an animated word, so every
+            // child here is a character.
             const chars = gsap.utils.toArray(w.children);
             gsap.set(chars, FX[fx]);
 
@@ -382,7 +421,7 @@ const About = () => {
         // line and top-to-bottom in the mobile paragraph.
         const beats = [
             ...cards.map((el, i) => ({ el, rest: TILT[i % TILT.length] })),
-            ...words.filter((w) => WORD_FX[fxKey(w)]).map((el) => ({ el, rest: 0 })),
+            ...words.filter((w) => w.dataset.fx).map((el) => ({ el, rest: 0 })),
         ].sort((a, b) => (a.el.compareDocumentPosition(b.el) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1));
 
         const px = (el) => () => offsetX(el) + el.offsetWidth / 2 - 14;
