@@ -95,8 +95,14 @@ const Skills = () => {
     // The icon is the shared element, so the rect handed across is the icon's,
     // not the card's — the destination page lands an icon, and measuring the
     // card here would make it fly from the wrong box.
+    //
+    // The hover face's icon first, because a click can only happen while that
+    // face is up, and the two faces put their icons in different places. Falling
+    // back to the resting one covers keyboard activation, where nothing is
+    // hovered at all.
     const open = (e, skill) => {
-        const icon = e.currentTarget.querySelector('.skill-icon');
+        const icon = e.currentTarget.querySelector('.skill-icon-hover')
+            || e.currentTarget.querySelector('.skill-icon');
         if (!icon) return;
         const { top, left, width, height } = icon.getBoundingClientRect();
         setPendingTransition({ kind: 'skill', slug: skill.slug, rect: { top, left, width, height } });
@@ -430,89 +436,62 @@ const Skills = () => {
                                     contents while its own outline was already
                                     drawn would give the trick away. */}
                                 <div className="skill-card-inner relative aspect-[3/4] w-full overflow-hidden rounded-sm bg-[#fffbeb] transition-[transform,box-shadow] duration-500 ease-out group-hover:-translate-y-2 group-hover:scale-[1.1] group-hover:shadow-[0_20px_44px_rgba(69,26,3,0.18)]">
-                                    <div className="relative h-full w-full rounded-sm border border-amber-900/25 transition-colors duration-500 ease-out group-hover:border-amber-950">
-                                        {/*
-                                          At rest there is no panel at all — the
-                                          icon and the name sit on the page's own
-                                          ground, inside nothing but a border.
-
-                                          On hover it is masked in from the top
-                                          edge downward: scaleY from an origin at
-                                          the top, which is the same reveal the
-                                          cards themselves use on arrival, only
-                                          inverted — there a cream veil uncovers
-                                          the card, here a dark one covers it.
-
-                                          scaleY rather than a clip-path or a
-                                          real <mask>: the panel is empty (the
-                                          type is a sibling painted over it), so
-                                          there is nothing for the squash to
-                                          distort, and a transform composites on
-                                          the GPU where a clip re-rasterises the
-                                          card every frame — fifteen of these can
-                                          be mid-hover at once.
-
-                                          Dark, not cream: with the plate gone
-                                          the card's ground IS the page, so a
-                                          cream panel would have nothing to
-                                          cover. amber-950 is the other pole of
-                                          lib/palette.js, and the inversion is
-                                          the reveal.
-
-                                          Inset 10% a side, so the panel stops
-                                          short of the border and the card keeps
-                                          a margin of its own ground all round.
-                                        */}
-                                        <div className="absolute inset-[10%] overflow-hidden">
-                                            <div className="pointer-events-none absolute inset-0 origin-top scale-y-0 bg-[#451a03] transition-transform duration-[560ms] ease-[cubic-bezier(0.16,1,0.3,1)] delay-100 group-hover:scale-y-100 group-hover:delay-0" />
-                                        </div>
-
-                                        {/* Inset to match the stage exactly, so
-                                            no glyph can sit outside the panel
-                                            meant to be behind it — and clipped,
-                                            so a long blurb is cut rather than
-                                            allowed to run out of the card. */}
-                                        <div className="absolute inset-[10%] flex flex-col items-center justify-center overflow-hidden px-1 text-center">
-                                            <span className="absolute inset-x-0 top-0 font-lexend text-[7.5px] uppercase tracking-[0.24em] text-amber-700/50 transition-colors duration-300 group-hover:text-amber-200/45 group-hover:delay-150">
+                                    {/* ── The resting card ───────────────────
+                                        Its own finished thing. Nothing in here
+                                        animates on hover: it is not transformed
+                                        into the other card, it is covered by it. */}
+                                    <div className="absolute inset-0 rounded-sm border border-amber-900/25">
+                                        <div className="flex h-full w-full flex-col items-center justify-center px-3 text-center">
+                                            <span className="absolute inset-x-0 top-3.5 font-lexend text-[7.5px] uppercase tracking-[0.24em] text-amber-700/50">
                                                 {group}
                                             </span>
 
-                                            {/* Everything below is delayed on
-                                                the way IN and immediate on the
-                                                way OUT, so the panel always
-                                                leads the text arriving and
-                                                always follows it leaving. That
-                                                ordering is what makes the two
-                                                moves read as one. */}
                                             {/* text-amber-800, not a fill class:
                                                 react-icons paint with
                                                 currentColor, and the reveal
                                                 clears the inline fill it tweened
                                                 so colour goes back to being
                                                 CSS's to change. */}
-                                            <Icon
-                                                className="skill-icon shrink-0 text-amber-800 transition-[transform,color] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[0.78] group-hover:text-amber-50 group-hover:delay-200"
-                                                size="2.3em"
-                                            />
-                                            <span className="mt-1.5 font-lexend text-[9px] font-semibold uppercase tracking-[0.14em] text-amber-950 transition-colors duration-300 group-hover:text-amber-50 group-hover:delay-150">
+                                            <Icon className="skill-icon shrink-0 text-amber-800" size="2.3em" />
+                                            <span className="mt-2 font-lexend text-[9px] font-semibold uppercase tracking-[0.14em] text-amber-950">
                                                 {label}
                                             </span>
+                                        </div>
+                                    </div>
 
-                                            {/* 0fr → 1fr, rather than a height
-                                                in px: the row collapses to
-                                                nothing and opens to exactly the
-                                                text's own height, so the blurb
-                                                can be any length and the icon
-                                                and name above it slide up by
-                                                precisely the right amount. */}
-                                            <div className="grid w-full grid-rows-[0fr] transition-[grid-template-rows] duration-[520ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:grid-rows-[1fr] group-hover:delay-200">
-                                                <div className="overflow-hidden">
-                                                    {/* Light: this text only ever
-                                                        exists on the dark panel. */}
-                                                    <p className="pt-1 font-lexend text-[8px] leading-[1.45] text-amber-100/75 opacity-0 transition-opacity duration-300 group-hover:opacity-100 group-hover:delay-[320ms]">
-                                                        {blurb}
-                                                    </p>
-                                                </div>
+                                    {/* ── The hovered card ───────────────────
+                                        A second, complete card — dark ground,
+                                        its own icon, its own type — revealed by
+                                        a window opening downward over the first.
+
+                                        Two counter-translated layers, and that
+                                        is the whole trick of a mask: the OUTER
+                                        one is the window, parked a full card
+                                        above and sliding down to 0; the INNER
+                                        one is pushed a full card DOWN inside it,
+                                        so while the window travels the card it
+                                        holds sits perfectly still in the page.
+                                        Cancel either translate and the content
+                                        slides instead of being uncovered.
+
+                                        Transforms, not height or clip-path: both
+                                        layers composite on the GPU, and nothing
+                                        here is ever squashed the way a scaleY on
+                                        a filled box would squash it.
+
+                                        No group tag: once the description is
+                                        showing, a category label is the least
+                                        interesting thing on the card. */}
+                                    <div className="pointer-events-none absolute inset-0 -translate-y-full overflow-hidden transition-transform duration-[620ms] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:translate-y-0">
+                                        <div className="absolute inset-0 translate-y-full transition-transform duration-[620ms] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:translate-y-0">
+                                            <div className="flex h-full w-full flex-col items-center justify-center bg-[#451a03] px-3 py-4 text-center">
+                                                <Icon className="skill-icon-hover shrink-0 text-amber-50" size="1.9em" />
+                                                <span className="mt-2 font-lexend text-[9px] font-semibold uppercase tracking-[0.14em] text-amber-50">
+                                                    {label}
+                                                </span>
+                                                <p className="mt-2 font-lexend text-[8px] leading-[1.5] text-amber-100/70">
+                                                    {blurb}
+                                                </p>
                                             </div>
                                         </div>
                                     </div>
