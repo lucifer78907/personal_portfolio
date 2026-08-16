@@ -423,7 +423,7 @@ const Skills = () => {
                   rather than leaving them jammed against the edges, since
                   snap-center aligns to the scrollport's middle.
                 */}
-                <div className="-mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto overscroll-x-contain px-[14vw] pb-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:absolute md:inset-0 md:mx-0 md:block md:overflow-visible md:px-0 md:pb-0">
+                <div className="-mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto overscroll-x-contain px-[28vw] pb-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:absolute md:inset-0 md:mx-0 md:block md:overflow-visible md:px-0 md:pb-0">
                     {SKILLS.map((skill, i) => {
                         const { slug, label, group, Icon, blurb } = skill;
                         return (
@@ -433,13 +433,15 @@ const Skills = () => {
                                 type="button"
                                 onClick={(e) => open(e, skill)}
                                 aria-label={`${label} — ${blurb}`}
-                                /* A snap target sized to most of the viewport
-                                   below md, so the dark face renders big enough
-                                   for its description to be worth reading. At
-                                   md+ the scatter takes over and GSAP writes an
-                                   inline width, which is why there is no width
-                                   utility past that breakpoint to fight it. */
-                                className="skill-card group relative block w-[72vw] max-w-[300px] shrink-0 snap-center text-left md:absolute md:left-0 md:top-0 md:w-auto md:max-w-none md:shrink"
+                                /* Sized to sit in the same proportion as a tile
+                                   on the desktop board, now that the rail shows
+                                   the same card rather than a big dark one with
+                                   a paragraph in it — and small enough that two
+                                   or three are in view, so it reads as a set.
+                                   At md+ the scatter takes over and GSAP writes
+                                   an inline width, which is why there is no
+                                   width utility past that breakpoint to fight. */
+                                className="skill-card group relative block w-[44vw] max-w-[180px] shrink-0 snap-center text-left md:absolute md:left-0 md:top-0 md:w-auto md:max-w-none md:shrink"
                             >
                                 {/* Clipping shell. Carries the hover transform —
                                     which lives here and not on the button,
@@ -501,29 +503,29 @@ const Skills = () => {
                                         showing, a category label is the least
                                         interesting thing on the card.
 
-                                        Below md both layers rest at 0, so this
-                                        card is simply the one you see. There is
-                                        no hover on a touchscreen, and a reveal
-                                        nobody can trigger is just content that
-                                        never arrives — so on the rail the dark
-                                        face IS the card, and the resting one
-                                        underneath never shows. */}
-                                    <div className="pointer-events-none absolute inset-0 overflow-hidden transition-transform duration-[620ms] ease-[cubic-bezier(0.16,1,0.3,1)] md:-translate-y-full md:group-hover:translate-y-0">
-                                        <div className="absolute inset-0 transition-transform duration-[620ms] ease-[cubic-bezier(0.16,1,0.3,1)] md:translate-y-full md:group-hover:translate-y-0">
-                                            {/* Two type scales, because this face
-                                                is a 124px tile on the desktop
-                                                board and a 260px card on the
-                                                mobile rail. Sized in h/w rather
-                                                than react-icons' `size` prop so
-                                                the icon can be responsive at
-                                                all — that prop writes fixed
-                                                width/height attributes. */}
-                                            <div className="flex h-full w-full flex-col items-center justify-center bg-[#451a03] px-5 py-6 text-center md:px-3 md:py-4">
-                                                <Icon className="skill-icon-hover h-10 w-10 shrink-0 text-amber-50 md:h-7 md:w-7" />
-                                                <span className="mt-3 font-lexend text-[13px] font-semibold uppercase tracking-[0.14em] text-amber-50 md:mt-2 md:text-[9px]">
+                                        Hidden at every width, including mobile.
+                                        It was pinned open on the rail so touch
+                                        users would see the description, but a
+                                        board of dark cards on a cream page is a
+                                        different design, not the same one — the
+                                        rail now shows exactly the card the
+                                        desktop board does, and the description
+                                        lives on the page a tap away. */}
+                                    <div className="pointer-events-none absolute inset-0 -translate-y-full overflow-hidden transition-transform duration-[620ms] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:translate-y-0">
+                                        <div className="absolute inset-0 translate-y-full transition-transform duration-[620ms] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:translate-y-0">
+                                            {/* One scale again, now that this face
+                                                only ever appears on hover and so
+                                                only ever on the desktop tile.
+                                                Sized in h/w rather than
+                                                react-icons' `size` prop, which
+                                                writes fixed width/height
+                                                attributes CSS then has to fight. */}
+                                            <div className="flex h-full w-full flex-col items-center justify-center bg-[#451a03] px-3 py-4 text-center">
+                                                <Icon className="skill-icon-hover h-7 w-7 shrink-0 text-amber-50" />
+                                                <span className="mt-2 font-lexend text-[9px] font-semibold uppercase tracking-[0.14em] text-amber-50">
                                                     {label}
                                                 </span>
-                                                <p className="mt-3 font-lexend text-[12px] leading-[1.55] text-amber-100/70 md:mt-2 md:text-[8px] md:leading-[1.5]">
+                                                <p className="mt-2 font-lexend text-[8px] leading-[1.5] text-amber-100/70">
                                                     {blurb}
                                                 </p>
                                             </div>

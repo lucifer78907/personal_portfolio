@@ -2,13 +2,12 @@ import { useEffect, useRef, useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { useGSAP } from '@gsap/react';
 import gsap from 'gsap';
-import { MorphSVGPlugin } from 'gsap/MorphSVGPlugin';
 import { ScrollSmoother } from 'gsap/ScrollSmoother';
 import { useIntro } from '../context/introContext';
 import { useChapterNav } from '../context/chapterContext';
+import { createShapeOverlay } from '../lib/shapeOverlay';
 import { EASE } from '../lib/eases'; // registers quartInOut / expoOut / quintOut
-
-gsap.registerPlugin(MorphSVGPlugin);
+import { PANELS } from '../lib/palette';
 
 const NAV_ITEMS = [
     { to: '/', label: 'Home' },
@@ -18,22 +17,12 @@ const NAV_ITEMS = [
     { to: '/contact', label: 'Say hi' },
 ];
 
-// Leading edge of each panel, as a path on a 100x100 viewBox stretched with
-// preserveAspectRatio="none". Both states use the identical command structure
-// (one cubic + close) so MorphSVG gets a clean 1:1 point map.
-//
-// Note for future tinkering: don't put an overshooting ease on this morph.
-// Overshoot pushes the control points past x=100, which is *behind* the solid
-// panel — invisible. Only the rebound back out is visible, which reads as a
-// glitch rather than a bounce. Keep the character in the panel's travel instead.
-const CURVE_BULGED = 'M100,0 C0,25 0,75 100,100 Z';
-const CURVE_FLAT = 'M100,0 C100,25 100,75 100,100 Z';
-
-// Width of that leading-edge curve, in vw. The curve is rendered to the LEFT of
-// its panel, so parking a panel at xPercent:100 still leaves CURVE_W of bulge
-// sitting on screen. Panels therefore rest at 100 + CURVE_W to clear it.
-const CURVE_W = 18;
-const PANEL_PARKED = 100 + CURVE_W;
+// The sliding panels and their MorphSVG leading edges are gone; the menu now
+// sweeps in on the shared shape overlay (lib/shapeOverlay.js), which draws a
+// rippled edge from a row of control points instead of morphing between two
+// fixed curves. Same arrival from the right, same 1s/0.08 timings — but the
+// loader and the page transition are now the identical move at a different
+// angle, rather than three implementations that had to be kept in step by hand.
 
 // Each menu character is a two-faced cube half a line-box deep. Face one sits
 // where the letter normally is; face two hangs directly beneath it looking
@@ -61,15 +50,14 @@ const FACE_UNDER = {
     backfaceVisibility: 'hidden',
 };
 
-const PANELS = [
-    { bg: '#fde68a' }, // amber-200
-    { bg: '#d97706' }, // amber-600
-    { bg: '#451a03' }, // amber-950 — deepest, carries the links
-];
+// PANELS now comes from lib/palette.js, which exists precisely so the menu and
+// the loader cannot disagree about the stack. This file kept its own identical
+// copy, which meant that guarantee was a coincidence rather than a fact.
 
 const Header = () => {
     const rootRef = useRef(null);
     const overlayRef = useRef(null);
+    const sheetsRef = useRef([]);
     const menuTl = useRef(null);
     const burgerTl = useRef(null);
     const [open, setOpen] = useState(false);
@@ -83,12 +71,15 @@ const Header = () => {
     const openRef = useRef(false);
 
     useGSAP(() => {
-        const panels = gsap.utils.toArray('.menu-panel');
-        const curves = gsap.utils.toArray('.menu-curve-path');
+        // axis 'x': the leading edge runs top-to-bottom and travels leftward, so
+        // the menu arrives from the right exactly as it always did.
+        const overlay = createShapeOverlay({ elements: sheetsRef.current, axis: 'x' });
 
-        // Resting state — parked far enough right that the curve clears the viewport too
+        // Resting state — nothing covered, the sheets' edges lying along the
+        // right-hand edge of the screen.
         gsap.set(overlayRef.current, { autoAlpha: 0 });
-        gsap.set(panels, { xPercent: PANEL_PARKED });
+        overlay.reset();
+        overlay.draw();
 
         // ── Burger entrance (plays once, after the loader hands off) ──────
         burgerTl.current = gsap.timeline({ paused: true })
@@ -100,32 +91,29 @@ const Header = () => {
             }, 0.1);
 
         // ── Open/close (played forward, reversed to close) ────────────────
-        menuTl.current = gsap.timeline({ paused: true })
-            .set(overlayRef.current, { autoAlpha: 1, pointerEvents: 'auto' })
-            // Panels fly in, staggered — the curve leads each one in
-            .to(panels, {
-                xPercent: 0,
-                duration: 1,
-                ease: 'quartInOut',
-                stagger: 0.08,
-            })
-            // Curve deliberately lags the panel and resolves on expoOut, so you
-            // watch the edge chase the panel and flatten out. No elastic here:
-            // its overshoot goes *into* the panel where it's hidden, so all you
-            // ever saw was the rebound popping back out.
-            .to(curves, {
-                morphSVG: CURVE_FLAT,
-                duration: 0.9,
-                ease: 'expoOut',
-                stagger: 0.08,
-            }, '<0.35')
+        //
+        // The sheets sweep in from the right with the rippled leading edge the
+        // loader and the page transition use — see lib/shapeOverlay.js. It
+        // replaces three sliding panels each dragging a MorphSVG curve behind
+        // it: same silhouette, same timings, but one mechanism the whole site
+        // shares rather than three that had to be kept in agreement by hand.
+        //
+        // Still played forward and reversed to close, so the menu keeps its
+        // existing semantics — including the instant snap-shut on navigation
+        // below, and Escape.
+        menuTl.current = gsap.timeline({ paused: true, onUpdate: overlay.draw })
+            .set(overlayRef.current, { autoAlpha: 1, pointerEvents: 'auto' });
+
+        overlay.sweep(menuTl.current, 0);
+
+        menuTl.current
             .from('.menu-link', {
                 yPercent: 115,
                 opacity: 0,
                 duration: 0.7,
                 stagger: 0.08,
                 ease: 'quintOut',
-            }, '-=0.7')
+            }, overlay.span - 0.55)
             // Burger becomes an X, lines recolour against the dark panel
             .to('.burger-line-1', { y: 4, rotate: 45, backgroundColor: '#fef3c7', duration: 0.5, ease: 'quartInOut' }, 0.15)
             .to('.burger-line-2', { y: -4, rotate: -45, backgroundColor: '#fef3c7', duration: 0.5, ease: 'quartInOut' }, 0.15)
@@ -237,23 +225,24 @@ const Header = () => {
                 ref={overlayRef}
                 className="fixed inset-0 z-[110] overflow-hidden pointer-events-none"
             >
-                {PANELS.map(({ bg }) => (
-                    <div
-                        key={bg}
-                        className="menu-panel absolute inset-0"
-                        style={{ backgroundColor: bg }}
-                    >
-                        <svg
-                            className="menu-curve absolute top-0 right-full h-full"
-                            style={{ width: `${CURVE_W}vw` }}
-                            viewBox="0 0 100 100"
-                            preserveAspectRatio="none"
-                            aria-hidden="true"
-                        >
-                            <path className="menu-curve-path" d={CURVE_BULGED} fill={bg} />
-                        </svg>
-                    </div>
-                ))}
+                {/* One SVG, one sheet per palette step. preserveAspectRatio
+                    ="none" is what lets a 100×100 user space stretch to any
+                    viewport: lib/shapeOverlay.js works in percentages and the
+                    browser does the rest. */}
+                <svg
+                    className="absolute inset-0 h-full w-full"
+                    viewBox="0 0 100 100"
+                    preserveAspectRatio="none"
+                    aria-hidden="true"
+                >
+                    {PANELS.map(({ bg }, i) => (
+                        <path
+                            key={bg}
+                            ref={(el) => { sheetsRef.current[i] = el; }}
+                            fill={bg}
+                        />
+                    ))}
+                </svg>
 
                 <nav className="absolute inset-0 flex flex-col justify-center gap-1 px-10 md:px-24">
                     {NAV_ITEMS.map(({ to, label }) => (

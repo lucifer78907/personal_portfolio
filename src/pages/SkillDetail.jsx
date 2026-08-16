@@ -13,12 +13,6 @@ import { EASE } from '../lib/eases';
 
 gsap.registerPlugin(Flip, SplitText);
 
-// How far the icon sinks after it lands. The flight ends where the destination
-// is, then the icon keeps going a little under its own weight and the title
-// rises into the space it leaves — one move handing off to another, rather than
-// an arrival followed by an unrelated reveal.
-const SETTLE = 26;
-
 const SkillDetail = () => {
     const { slug } = useParams();
     const skill = skillBySlug(slug);
@@ -55,20 +49,17 @@ const SkillDetail = () => {
             width: rect.width, height: rect.height,
             autoAlpha: 1, zIndex: 90,
         });
-        // Parked SETTLE above its resting place BEFORE the fit is built, because
-        // Flip.fit measures the destination the moment it is constructed. Fitting
-        // to the resting box and then animating a drag down from above would put
-        // a visible jump at the swap — the icon landing, then teleporting back up
-        // to start its second move. Landing on the raised box means the swap has
-        // nothing to see and the drag continues the same motion.
-        gsap.set(dest, { autoAlpha: 0, y: -SETTLE });
+        // No offset, and nothing after the fit. The icon used to land a little
+        // high and then drag down into place, which read as it overshooting and
+        // falling rather than arriving — Flip.fit already ends exactly on the
+        // destination's box, so anything added afterwards is a second move the
+        // eye reads as a mistake in the first.
+        gsap.set(dest, { autoAlpha: 0 });
 
         const tl = gsap.timeline();
         tl.add(Flip.fit(flyer, dest, { duration: 1.05, ease: EASE.travel, scale: true }))
             .set(dest, { autoAlpha: 1 })
-            .set(flyer, { autoAlpha: 0 })
-            // The drag down, into the space the title is about to rise through.
-            .to(dest, { y: 0, duration: 0.7, ease: EASE.arrive });
+            .set(flyer, { autoAlpha: 0 });
 
         clearPendingTransition();
         return () => tl.kill();
@@ -77,9 +68,10 @@ const SkillDetail = () => {
     useGSAP(() => {
         if (!skill) return;
 
-        // Held back until the icon has landed and started to sink, so the title
-        // comes up into the gap the settle opens rather than racing it.
-        const delay = incoming ? 0.95 : 0.15;
+        // Overlaps the tail of the icon's flight rather than waiting it out —
+        // the flight is 1.05s, and starting the title at 0.85 means it is
+        // already rising as the icon settles instead of after a dead beat.
+        const delay = incoming ? 0.85 : 0.15;
 
         const title = SplitText.create('.skill-title', { type: 'chars', mask: 'chars' });
         gsap.from(title.chars, {

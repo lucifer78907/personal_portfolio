@@ -6,28 +6,13 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { ScrollSmoother } from 'gsap/ScrollSmoother';
 import Header from '../components/Header';
 import Seo from '../components/Seo';
-// import HeroLoader from '../components/Loader';
-import { useIntro } from '../context/introContext';
+import HeroLoader from '../components/Loader';
 import { ChapterProvider } from '../context/chapterContext';
 
 gsap.registerPlugin(useGSAP, ScrollTrigger, ScrollSmoother);
 
 const RootLayout = () => {
     const { pathname } = useLocation();
-    const { finishIntro } = useIntro();
-
-    // TEMPORARY — loader disabled for development; see the commented-out
-    // <HeroLoader /> below and restore both together.
-    //
-    // This is not optional while the loader is off. The loader is what calls
-    // finishIntro(), and everything that animates in on first paint is built
-    // PAUSED waiting on it: the hero's first heading line sits at autoAlpha 0
-    // as the loader's Flip target, the polaroid deck is parked off-screen at
-    // xPercent 100, and the burger is hidden. Without this the homepage loads
-    // with half its heading missing and no navigation.
-    useEffect(() => {
-        finishIntro();
-    }, [finishIntro]);
 
     // ScrollSmoother owns scrolling for the whole app. Created once, here, because
     // it needs a single wrapper/content pair that outlives route changes.
@@ -83,9 +68,11 @@ const RootLayout = () => {
                 right tags per page — see scripts/generate-seo.mjs. */}
             <Seo />
 
-            {/* TEMPORARY — disabled for development. Restore together with the
-                useEffect above that stands in for its finishIntro() call. */}
-            {/* <HeroLoader /> */}
+            {/* Owns the intro: it calls finishIntro(), and the hero's first
+                heading line, the polaroid deck and the burger are all built
+                PAUSED waiting on that. Disabling it needs a stand-in for the
+                call, or the homepage loads with half its heading missing. */}
+            <HeroLoader />
             <Header />
 
             <div id="smooth-wrapper">

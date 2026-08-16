@@ -2,12 +2,12 @@ import { useRef } from "react";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { Flip } from "gsap/Flip";
-import { MorphSVGPlugin } from "gsap/MorphSVGPlugin";
 import { useIntro } from "../context/introContext";
 import { EASE } from "../lib/eases";
 import { PANELS } from "../lib/palette";
+import { createShapeOverlay } from "../lib/shapeOverlay";
 
-gsap.registerPlugin(Flip, MorphSVGPlugin);
+gsap.registerPlugin(Flip);
 
 /**
  * The cycle, and the word it has to land on.
@@ -77,60 +77,52 @@ const FLAP_STAGGER = FLAP * FLAP_LAG;
 const FLAP_PERSPECTIVE = 520;
 
 /**
- * The hem of each curtain.
+ * The peel is now the shared sweep — see lib/shapeOverlay.js.
  *
- * The panels rise, so their trailing edge is the BOTTOM one and the belly hangs
- * down behind them as they go. Same command structure as the menu's pair (one
- * cubic + a close) so MorphSVG still gets a clean 1:1 point map — only the axis
- * differs, since the menu's panels travel sideways and these travel up.
- */
-const CURVE_FLAT = "M0,0 C25,0 75,0 100,0 Z";
-const CURVE_DRAGGED = "M0,0 C25,100 75,100 100,0 Z";
-
-// Height of that hem in vh. It hangs BELOW its panel, so a panel parked at
-// yPercent:-100 would still leave CURVE_H of belly on screen. They travel to
-// -(100 + CURVE_H) to clear it — the mirror of the menu's PANEL_PARKED.
-const CURVE_H = 18;
-const PANEL_EXIT = 100 + CURVE_H;
-
-/**
- * The menu's panel choreography, verbatim — then stretched.
+ * The panels and their dragged MorphSVG hems are gone. That machinery existed
+ * to copy the menu's choreography by hand ("NAV is copied from Header.jsx"),
+ * with a PACE multiplier to keep the two in proportion; both files now call the
+ * same function instead, so the loader leaving, the menu arriving and a page
+ * transition covering are literally one move at three angles.
  *
- * NAV is copied from [Header.jsx]: the same eases, the same stagger, and the
- * same relationship between the two tweens (the hem only starts dragging 0.35
- * of the way into the travel). PACE scales the clock and nothing else, so the
- * curves stay identical to the menu's while the whole thing gets more room.
+ * The sweep's own length lives on the overlay as `span`, so the beats below
+ * derive from it rather than from a local copy of the menu's numbers.
  */
-const NAV = { travel: 1, morph: 0.9, stagger: 0.08, morphOffset: 0.35 };
-const PACE = 1.35;
-
-const PANEL_TRAVEL = NAV.travel * PACE;
-const PANEL_STAGGER = NAV.stagger * PACE;
-const CURVE_MORPH = NAV.morph * PACE;
-const CURVE_OFFSET = NAV.morphOffset * PACE;
 
 // Absolute beats, so the Flip can be scheduled against real numbers instead of
 // label arithmetic. Derived rather than typed in, so retiming the peel doesn't
 // silently leave the word landing on a page that's still covered.
 const METER_OUT = COUNT_DURATION + 0.4;
 const PEEL_AT = COUNT_DURATION + 0.5;
-const PEEL_END = PEEL_AT + PANEL_STAGGER * (PANELS.length - 1) + PANEL_TRAVEL;
 const FLIP_DUR = 1.1;
-const FLIP_AT = PEEL_END - FLIP_DUR + 0.28; // lands just after the last panel clears
 
 const HeroLoader = () => {
     const overlayRef = useRef(null);
+    const sheetsRef = useRef([]);
     const markRef = useRef(null);
     const counterRef = useRef(null);
     const ruleRef = useRef(null);
     const { finishIntro } = useIntro();
 
     useGSAP(() => {
-        const panels = gsap.utils.toArray(".loader-panel");
-        const curves = gsap.utils.toArray(".loader-curve");
+        // axis 'y', and it starts fully covered — the sheets are the loader.
+        const overlay = createShapeOverlay({ elements: sheetsRef.current, axis: 'y' });
+        overlay.setCovering(false);
+        overlay.draw();
+
+        // Derived from the sweep itself, so retiming lib/shapeOverlay.js cannot
+        // leave the Flip landing on a page the sheets are still covering.
+        const PEEL_END = PEEL_AT + overlay.span;
+        const FLIP_AT = PEEL_END - FLIP_DUR + 0.28;
+
+        // The word's recolour used to hang off CURVE_OFFSET — the hem's 0.35-of-
+        // travel lag behind its panel. There is no hem now, so the same intent is
+        // stated directly: a third of the way into the sweep, once enough of the
+        // deep sheet has cleared that cream would stop reading against the page.
+        const WORD_AT = PEEL_AT + overlay.span * 0.35;
 
         const counter = { value: 0 };
-        const tl = gsap.timeline();
+        const tl = gsap.timeline({ onUpdate: overlay.draw });
 
         tl.to(counter, {
             value: 100,
@@ -215,26 +207,7 @@ const HeroLoader = () => {
             duration: 0.35,
             ease: EASE.leave,
         }, METER_OUT)
-            // from: "end" is the inversion the palette describes. The menu deals
-            // these panels out light-first and lands the deepest one last; here the
-            // deepest leaves first and the stack unpeels back up to light.
-            .to(panels, {
-                yPercent: -PANEL_EXIT,
-                duration: PANEL_TRAVEL,
-                ease: EASE.travel,
-                stagger: { each: PANEL_STAGGER, from: "end" },
-            }, PEEL_AT)
-            // Starts 0.35 of the way into the travel, exactly as the menu's does.
-            // The hem is being dragged by a curtain already moving, not animated
-            // alongside it — starting them together is what makes it read as a
-            // shape doing a trick instead of as weight.
-            .to(curves, {
-                morphSVG: CURVE_DRAGGED,
-                duration: CURVE_MORPH,
-                ease: EASE.arrive,
-                stagger: { each: PANEL_STAGGER, from: "end" },
-            }, PEEL_AT + CURVE_OFFSET)
-            // The word sits above the panels, so the sheets peel out from behind it
+            // The word sits above the sheets, so they peel out from behind it
             // and leave it floating on the bare page. Cream reads on the deep panel
             // but not on #fffbeb, so it darkens into the heading's colour on the way
             // — timed to be fully dark by the time the last panel is gone.
@@ -242,7 +215,19 @@ const HeroLoader = () => {
                 color: HEADING_COLOR,
                 duration: 0.9,
                 ease: EASE.text,
-            }, PEEL_AT + CURVE_OFFSET);
+            }, WORD_AT);
+
+        // ── The peel ─────────────────────────────────────────────────────
+        // The same sweep the menu arrives on and the page transition covers
+        // with, pointed upward: covering:false empties the screen from the
+        // bottom edge up, so the sheets leave through the top.
+        //
+        // lead:'last' is the inversion the palette describes. The menu deals
+        // these sheets out light-first and lands the deepest one last; here the
+        // deepest leaves first and the stack unpeels back up to light.
+        overlay.setCovering(false);
+        overlay.reset();
+        overlay.sweep(tl, PEEL_AT, { lead: 'last' });
 
         // The heading only exists on the home route. Everywhere else there's
         // nothing to hand off to, so the word just leaves with the panels.
@@ -272,7 +257,7 @@ const HeroLoader = () => {
                 opacity: 0,
                 duration: 0.7,
                 ease: EASE.leave,
-            }, PEEL_AT + CURVE_OFFSET)
+            }, WORD_AT)
                 .call(finishIntro, null, PEEL_END - 0.3)
                 .set(overlayRef.current, { display: "none" });
         }
@@ -280,30 +265,24 @@ const HeroLoader = () => {
 
     return (
         <section ref={overlayRef} className="hero__overlay fixed inset-0 z-[101] overflow-hidden">
-            {PANELS.map(({ bg }, i) => (
-                // Stacked in palette order, so the deepest is on top and is what
-                // you see at rest. zIndex follows the index for the same reason.
-                <div
-                    key={bg}
-                    className="loader-panel absolute inset-0"
-                    style={{ backgroundColor: bg, zIndex: i }}
-                >
-                    {/*
-                      Hangs just past the bottom edge (top-full) and is clipped away
-                      by the section's overflow-hidden, so at rest there is no hem to
-                      see — it only exists once the curtain has started to lift.
-                    */}
-                    <svg
-                        className="absolute top-full left-0 w-full"
-                        style={{ height: `${CURVE_H}vh` }}
-                        viewBox="0 0 100 100"
-                        preserveAspectRatio="none"
-                        aria-hidden="true"
-                    >
-                        <path className="loader-curve" d={CURVE_FLAT} fill={bg} />
-                    </svg>
-                </div>
-            ))}
+            {/* One SVG, one sheet per palette step, painted in palette order so
+                the deepest is on top and is what you see at rest.
+                preserveAspectRatio="none" is what lets a 100×100 user space
+                stretch to any viewport. */}
+            <svg
+                className="absolute inset-0 h-full w-full"
+                viewBox="0 0 100 100"
+                preserveAspectRatio="none"
+                aria-hidden="true"
+            >
+                {PANELS.map(({ bg }, i) => (
+                    <path
+                        key={bg}
+                        ref={(el) => { sheetsRef.current[i] = el; }}
+                        fill={bg}
+                    />
+                ))}
+            </svg>
 
             {/*
               Above every panel, so the peel happens behind it. Weight and tracking

@@ -2,22 +2,19 @@ import { createContext, useCallback, useContext, useMemo, useRef, useState } fro
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useGSAP } from '@gsap/react';
 import gsap from 'gsap';
+import { createShapeOverlay, WORD_DURATION } from '../lib/shapeOverlay';
 import { EASE } from '../lib/eases';
 
 /**
  * The chapter card.
  *
- * Two gradient sheets sweep down over the page with a soft, rippling leading
- * edge, carrying the name of where you are going. They hold for a beat, then
- * retreat upward to reveal the new route underneath.
+ * Two gradient sheets sweep up over the page with a soft, rippling leading
+ * edge, carrying the name of where you are going. They hold for a beat and keep
+ * travelling upward, leaving through the top to reveal the new route — one
+ * continuous move rather than a cover that retreats the way it came.
  *
- * The edge is a bezier rebuilt every frame from a row of control points, each
- * released on its OWN random delay. That randomness is the whole effect: give
- * the points an even stagger instead and the edge arrives as a straight
- * diagonal wipe. Give them scattered delays and it reads as liquid.
- *
- * Structure follows the shape-overlays technique (Codrops, via Blake Bowen's
- * GSAP fork), on the site's own amber ladder rather than a borrowed palette.
+ * The sweep itself is lib/shapeOverlay.js, the same gesture the loader leaves on
+ * and the menu arrives on. Only the angle and the colours differ.
  *
  * Deliberately NOT a shared element. The site already hands objects across
  * routes in three places (the loader's word into the hero, a polaroid into
@@ -70,62 +67,13 @@ export const useChapterNav = () => {
 
     return useCallback((to, word) => (e) => {
         if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
-        if (to === pathname) {
-            e.preventDefault();
-            return;
-        }
         e.preventDefault();
+        if (to === pathname) return;
         go(word ?? wordFor(to), to);
     }, [go, pathname]);
 };
 
-const NUM_POINTS = 10;
-const NUM_PATHS = 2;
-
-/**
- * Timings, taken from the nav menu so the two read as the same machine.
- *
- * Header.jsx flies its three panels in over 1s on quartInOut, staggered 0.08,
- * and brings the links up over 0.7s on quintOut. Those are the numbers here,
- * unchanged — a sweep IS a panel travelling, so it takes exactly as long as one,
- * the sheets trail each other by the menu's own stagger, and the word arrives on
- * the links' own curve over the links' own duration.
- *
- * The ripple is the one thing with no equivalent in the menu, and it is pulled
- * well in from the reference's 0.3 — a wide scatter reads as chaotic, where a
- * narrow one just softens the edge.
- */
-const DURATION = 1;            // the menu's panel travel
-const DELAY_PER_PATH = 0.08;   // the menu's panel stagger
-const WORD_DURATION = 0.7;     // the menu's link reveal
-const DELAY_POINTS_MAX = 0.16; // the ripple — each point waits its own slice
-
-const SWEEP = DURATION + DELAY_POINTS_MAX + DELAY_PER_PATH * (NUM_PATHS - 1);
 const HOLD = 0.18;
-
-/**
- * The path for one sheet.
- *
- * `pts` are the y positions of the leading edge, left to right, in the 0–100
- * user space of the viewBox. Each pair is joined by a cubic whose control
- * points sit halfway between them, which is what turns a row of independent
- * numbers into one continuous curve rather than a chain of visible arcs.
- *
- * Both directions animate their points 100 → 0; `covering` decides which side
- * of the curve is solid, and therefore whether that means filling downward from
- * the top or emptying upward off it.
- */
-const buildPath = (pts, covering) => {
-    let d = covering ? `M 0 0 V ${pts[0]} C` : `M 0 ${pts[0]} C`;
-
-    for (let i = 0; i < NUM_POINTS - 1; i++) {
-        const p = ((i + 1) / (NUM_POINTS - 1)) * 100;
-        const cp = p - (100 / (NUM_POINTS - 1)) / 2;
-        d += ` ${cp} ${pts[i]} ${cp} ${pts[i + 1]} ${p} ${pts[i + 1]}`;
-    }
-
-    return d + (covering ? ' V 100 H 0' : ' V 0 H 0');
-};
 
 // The project has no prop-types dependency and validates no other provider
 // (see introContext.jsx); adding it for one file would be inconsistent rather
@@ -136,66 +84,28 @@ export const ChapterProvider = ({ children }) => {
     const rootRef = useRef(null);
     const pathsRef = useRef([]);
     const wordRef = useRef(null);
+    const overlayRef = useRef(null);
     const busy = useRef(false);
-
-    // Plain arrays, not component state: these are tweened sixty times a second
-    // and re-rendering React per frame would be absurd. GSAP writes the numbers,
-    // draw() writes the DOM.
-    const edge = useRef({
-        pts: Array.from({ length: NUM_PATHS }, () => new Array(NUM_POINTS).fill(100)),
-        covering: true,
-    });
 
     const [word, setWord] = useState('');
     const navigate = useNavigate();
 
-    const draw = useCallback(() => {
-        const { pts, covering } = edge.current;
-        pts.forEach((points, i) => {
-            pathsRef.current[i]?.setAttribute('d', buildPath(points, covering));
-        });
-    }, []);
-
     useGSAP(() => {
+        // Built here, not at module scope: createShapeOverlay counts its paths
+        // on creation, and before mount the ref array is still empty.
+        overlayRef.current = createShapeOverlay({ elements: pathsRef.current, axis: 'y' });
+
         // Parked out of sight until needed. autoAlpha rather than display, so
         // the word's box can still be measured for its mask on the first run.
         gsap.set(rootRef.current, { autoAlpha: 0 });
         gsap.set(wordRef.current, { yPercent: 110 });
-        draw();
+        overlayRef.current.draw();
     }, { scope: rootRef });
 
-    /**
-     * Queue one sweep onto the timeline.
-     *
-     * Every point of every sheet gets its own tween at its own offset — that is
-     * why this is a nest of loops rather than a single staggered tween. A
-     * stagger distributes delays evenly by definition, and even is exactly what
-     * this must not be.
-     */
-    const sweep = useCallback((tl, at, covering) => {
-        const { pts } = edge.current;
-
-        // Fresh scatter each sweep, so the ripple never repeats itself. Random
-        // is fine here and nowhere near the layout code: this is timing, which
-        // nobody can diff between runs.
-        const jitter = Array.from({ length: NUM_POINTS }, () => Math.random() * DELAY_POINTS_MAX);
-
-        for (let i = 0; i < NUM_PATHS; i++) {
-            // Reversed on the way out, so the sheet that led coming in is the
-            // one that trails leaving and the two layers never cross.
-            const pathDelay = DELAY_PER_PATH * (covering ? i : NUM_PATHS - i - 1);
-
-            for (let j = 0; j < NUM_POINTS; j++) {
-                tl.to(pts[i], {
-                    [j]: 0,
-                    duration: DURATION,
-                    ease: EASE.travel,
-                }, at + jitter[j] + pathDelay);
-            }
-        }
-    }, []);
-
     const go = useCallback((label, to) => {
+        const overlay = overlayRef.current;
+        if (!overlay) return;
+
         // A second click mid-transition would build a second timeline over the
         // first and navigate twice.
         if (busy.current) return;
@@ -205,17 +115,16 @@ export const ChapterProvider = ({ children }) => {
 
         const root = rootRef.current;
         const mark = wordRef.current;
-        const reset = () => edge.current.pts.forEach((p) => p.fill(100));
 
-        edge.current.covering = true;
-        reset();
+        overlay.setCovering(true);
+        overlay.reset();
         gsap.set(mark, { yPercent: 110 });
-        draw();
+        overlay.draw();
 
         // One render per frame for the whole timeline, rather than an onUpdate
         // hanging off each of the forty point tweens.
         const tl = gsap.timeline({
-            onUpdate: draw,
+            onUpdate: overlay.draw,
             onComplete: () => {
                 busy.current = false;
                 gsap.set(root, { autoAlpha: 0, pointerEvents: 'none' });
@@ -224,23 +133,26 @@ export const ChapterProvider = ({ children }) => {
 
         tl.set(root, { autoAlpha: 1, pointerEvents: 'auto' });
 
-        sweep(tl, 0, true);
+        overlay.sweep(tl, 0, { lead: 'first' });
         // EASE.text is quintOut — the curve the menu's own links come up on.
-        tl.to(mark, { yPercent: 0, duration: WORD_DURATION, ease: EASE.text }, SWEEP * 0.5);
+        tl.to(mark, { yPercent: 0, duration: WORD_DURATION, ease: EASE.text }, overlay.span * 0.5);
 
         // Covered. Swap the route, put the points back to 100, and flip which
-        // side of the curve is solid so the next sweep empties upward.
+        // side of the curve is solid so the next sweep empties through the top.
         tl.call(() => {
             navigate(to);
-            reset();
-            edge.current.covering = false;
-        }, null, SWEEP + HOLD);
+            overlay.reset();
+            overlay.setCovering(false);
+        }, null, overlay.span + HOLD);
 
-        sweep(tl, SWEEP + HOLD, false);
+        // 'last' reverses which sheet goes first, so the one that led coming in
+        // trails leaving and the two layers never cross.
+        overlay.sweep(tl, overlay.span + HOLD, { lead: 'last' });
+
         // Out on `leave` — the site's departure curve, which accelerates away
         // rather than decelerating into the finish like an arrival would.
-        tl.to(mark, { yPercent: -110, duration: 0.5, ease: EASE.leave }, SWEEP + HOLD);
-    }, [navigate, draw, sweep]);
+        tl.to(mark, { yPercent: -110, duration: 0.5, ease: EASE.leave }, overlay.span + HOLD);
+    }, [navigate]);
 
     const value = useMemo(() => ({ go }), [go]);
 
@@ -262,9 +174,6 @@ export const ChapterProvider = ({ children }) => {
                 aria-hidden="true"
                 className="fixed inset-0 z-[130] overflow-hidden pointer-events-none"
             >
-                {/* preserveAspectRatio="none" is what lets a 100×100 user space
-                    stretch to any viewport: the maths works in percentages and
-                    the browser does the rest. */}
                 <svg
                     className="absolute inset-0 h-full w-full"
                     viewBox="0 0 100 100"
@@ -272,7 +181,8 @@ export const ChapterProvider = ({ children }) => {
                 >
                     <defs>
                         {/* The site's own ladder, light to deep — the same
-                            traversal lib/palette.js describes for the menu. */}
+                            traversal lib/palette.js describes for the menu,
+                            here as gradients rather than flat fills. */}
                         <linearGradient id="chapter-a" x1="0%" y1="0%" x2="0%" y2="100%">
                             <stop offset="0%" stopColor="#fde68a" />
                             <stop offset="100%" stopColor="#d97706" />
