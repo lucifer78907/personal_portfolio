@@ -10,6 +10,7 @@ import About from "./pages/About";
 import Gallery from "./pages/Gallery";
 import Contact from "./pages/Contact";
 import Projects from "./pages/Projects";
+import SkillDetail from "./pages/SkillDetail";
 
 gsap.registerPlugin(SplitText, ScrollTrigger);
 
@@ -26,6 +27,10 @@ const router = createBrowserRouter([
       { path: '/random-photos', element: <Gallery /> },
       { path: '/contact', element: <Contact /> },
       { path: '/projects', element: <Projects /> },
+      // Opened by the skills board on the homepage, which hands the clicked
+      // icon across as a shared element. Also valid as a direct URL — the page
+      // falls back to a plain reveal when it arrives without one.
+      { path: '/skills/:slug', element: <SkillDetail /> },
     ],
   },
 ]);
