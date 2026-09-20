@@ -9,7 +9,27 @@ import { RiGitRepositoryPrivateFill, RiNextjsFill, RiTailwindCssFill } from 'rea
 import { SiExpress, SiGreensock, SiJavascript, SiNetlify, SiReactrouter, SiSwiper, SiTypescript, SiOpenai, SiKubernetes, SiPostgresql } from 'react-icons/si';
 import { HiSparkles } from 'react-icons/hi2';
 import { TbPlugConnected } from 'react-icons/tb';
-import PageColumn from '../components/PageColumn';
+
+/*
+  Projects page — v2.
+  Data is preserved verbatim from v1 (id 0..7). No copy edits, no ordering
+  changes, no icon changes. The overhaul is presentation only.
+
+  Composition:
+  - Featured plate: current work (Initializ.ai Console) gets a full-viewport
+    editorial opener — display headline, generous whitespace, one CTA.
+  - Gallery: the shipped middle tier flows through a horizontal-pan track,
+    pinned on desktop, native vertical stack on mobile / reduced-motion.
+    Varied tile widths give the track bento rhythm instead of 8 identical
+    rectangles.
+  - Archive: earliest static-site work drops to a compact index — same data,
+    less weight.
+
+  Motion budget matches the rest of the site (ScrollSmoother + heavy GSAP).
+  The purple-accent AI card treatment from v1 is intentionally dropped: the
+  brand palette is amber. Emphasis is created via composition (scale, position,
+  isolation of the featured plate) rather than palette breaks.
+*/
 
 const projects = [
     {
@@ -73,171 +93,366 @@ const projects = [
     },
 ];
 
+// Split by tier so composition can vary. Data is unchanged.
+const featured = projects.find((p) => p.isAI);
+const gallery = projects.filter((p) => !p.isAI && p.id < 6);
+const archive = projects.filter((p) => p.id >= 6);
+
 function Projects() {
-    const containerRef = useRef();
+    const rootRef = useRef(null);
+    const panWrapRef = useRef(null);
+    const panTrackRef = useRef(null);
 
     gsap.registerPlugin(ScrollTrigger, SplitText);
 
     useGSAP(() => {
-        // Set initial visibility
-        gsap.set(['.projects-heading', '.projects-subheading', '.project-card'], {
-            visibility: 'visible'
+        // ---- FEATURED PLATE ------------------------------------------------
+        gsap.set(['.featured-eyebrow', '.featured-title', '.featured-copy', '.featured-cta', '.featured-stack', '.featured-meta'], {
+            visibility: 'visible',
         });
 
-        // Heading animation
-        const splitHeading = SplitText.create('.projects-heading', {
-            type: 'chars',
-        });
+        const featuredSplit = SplitText.create('.featured-title', { type: 'chars,words', mask: 'chars' });
 
-        gsap.from(splitHeading.chars, {
-            yPercent: 100,
+        gsap.from('.featured-eyebrow', {
+            yPercent: 40,
             opacity: 0,
+            duration: 0.6,
+            ease: 'power2.out',
+            scrollTrigger: { trigger: '.featured-plate', start: 'top 85%', toggleActions: 'play none none reverse' },
+        });
+
+        gsap.from(featuredSplit.chars, {
+            yPercent: 110,
+            duration: 0.9,
             stagger: 0.02,
-            ease: "power3.out",
-            scrollTrigger: {
-                trigger: '.projects-heading',
-                start: 'top 90%',
-                end: 'top 60%',
-                scrub: 1,
-                toggleActions: 'play none none reverse',
-            }
+            ease: 'power3.out',
+            scrollTrigger: { trigger: '.featured-plate', start: 'top 80%', toggleActions: 'play none none reverse' },
         });
 
-        // Subheading
-        gsap.from('.projects-subheading', {
+        gsap.from(['.featured-copy', '.featured-cta', '.featured-stack', '.featured-meta'], {
+            y: 30,
             opacity: 0,
-            x: 50,
-            scrollTrigger: {
-                trigger: '.projects-subheading',
-                start: 'top 90%',
-                end: 'top 70%',
-                scrub: 1,
-                toggleActions: 'play none none reverse',
-            }
+            duration: 0.7,
+            stagger: 0.08,
+            ease: 'power2.out',
+            scrollTrigger: { trigger: '.featured-plate', start: 'top 70%', toggleActions: 'play none none reverse' },
         });
 
-        // Project cards stagger
-        gsap.from('.project-card', {
+        // ---- HORIZONTAL GALLERY (pin + pan) --------------------------------
+        // matchMedia scopes the hijack to desktop + prefers-reduced-motion off.
+        // GSAP tears the ScrollTrigger down on breakpoint change automatically.
+        const mm = gsap.matchMedia();
+
+        mm.add(
+            {
+                isDesktop: '(min-width: 768px) and (prefers-reduced-motion: no-preference)',
+                isReduced: '(prefers-reduced-motion: reduce), (max-width: 767px)',
+            },
+            (ctx) => {
+                const { isDesktop } = ctx.conditions;
+                if (!isDesktop) return; // small screens / reduced-motion get CSS-only vertical flow
+
+                const track = panTrackRef.current;
+                const wrap = panWrapRef.current;
+                if (!track || !wrap) return;
+
+                const getDistance = () => track.scrollWidth - window.innerWidth;
+
+                // ease: 'none' is REQUIRED so containerAnimation math stays 1:1
+                // with scroll position. Any other ease breaks the per-tile
+                // reveals below.
+                const pan = gsap.to(track, {
+                    x: () => -getDistance(),
+                    ease: 'none',
+                    scrollTrigger: {
+                        trigger: wrap,
+                        start: 'top top',
+                        end: () => `+=${getDistance()}`,
+                        pin: true,
+                        scrub: 1,
+                        invalidateOnRefresh: true,
+                        anticipatePin: 1,
+                    },
+                });
+
+                // Per-tile reveal driven by horizontal pan progress.
+                gsap.utils.toArray('.gallery-tile').forEach((tile) => {
+                    gsap.from(tile, {
+                        y: 40,
+                        opacity: 0,
+                        duration: 0.6,
+                        ease: 'power2.out',
+                        scrollTrigger: {
+                            trigger: tile,
+                            containerAnimation: pan,
+                            start: 'left 85%',
+                            toggleActions: 'play none none reverse',
+                        },
+                    });
+                });
+            }
+        );
+
+        // ---- ARCHIVE INDEX -------------------------------------------------
+        gsap.from('.archive-row', {
             opacity: 0,
-            y: 60,
-            stagger: 0.2,
-            ease: "power2.out",
-            scrollTrigger: {
-                trigger: '.projects-container',
-                start: 'top 80%',
-                end: 'top 40%',
-                scrub: 1.5,
-                toggleActions: 'play none none reverse',
-            }
+            y: 20,
+            stagger: 0.08,
+            duration: 0.5,
+            ease: 'power2.out',
+            scrollTrigger: { trigger: '.archive-index', start: 'top 85%', toggleActions: 'play none none reverse' },
         });
 
-        // Refresh ScrollTrigger after setup
-        setTimeout(() => {
-            ScrollTrigger.refresh();
-        }, 100);
-    }, { scope: containerRef });
+        // Fonts + images can shift layout post-mount; re-measure once.
+        const refreshT = setTimeout(() => ScrollTrigger.refresh(), 200);
+        return () => clearTimeout(refreshT);
+    }, { scope: rootRef });
 
     return (
-        <PageColumn>
-        <section ref={containerRef} className='p-6 py-20 2xl:w-3/4 2xl:mx-auto'>
-            <header className='mb-12'>
-                <h2 className='projects-heading font-lexend text-5xl sm:text-6xl md:text-7xl font-semibold tracking-tighter text-amber-950 overflow-hidden'>
-                    Projects
-                </h2>
-                <p className='projects-subheading tracking-tighter mt-2 font-lexend sm:text-base lg:text-xl text-right font-medium text-sm text-amber-700/60'>
-                    Talk's cheap! Show me the code
-                </p>
-            </header>
-            <main className='projects-container flex gap-6 flex-col sm:gap-8'>
-                {projects.map((project) => {
-                    return <ProjectCard key={project.id} {...project} />
-                })}
-            </main>
+        <section ref={rootRef} className="relative">
+            {/* =============================================================
+                 FEATURED PLATE — full-viewport opener.
+             ============================================================= */}
+            <div className="featured-plate min-h-[100dvh] flex items-center px-6 sm:px-10 lg:px-20 2xl:px-32 py-24">
+                <div className="w-full grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-end">
+                    <div className="lg:col-span-8">
+                        <p className="featured-eyebrow invisible font-lexend text-xs sm:text-sm tracking-[0.28em] uppercase text-amber-700/70 mb-6">
+                            Currently building
+                        </p>
+                        <h1 className="featured-title invisible font-lexend text-5xl sm:text-7xl lg:text-8xl xl:text-9xl font-semibold tracking-tighter leading-[0.95] text-amber-950 overflow-hidden pb-2">
+                            {featured.title}
+                        </h1>
+                        <p className="featured-copy invisible mt-8 font-lexend text-base sm:text-lg lg:text-xl leading-relaxed text-amber-950/75 max-w-[62ch]">
+                            {featured.description}
+                        </p>
+                    </div>
+
+                    <div className="lg:col-span-4 flex flex-col gap-8">
+                        <div className="featured-stack invisible">
+                            <p className="font-lexend text-xs tracking-[0.24em] uppercase text-amber-700/60 mb-4">
+                                Tech stack
+                            </p>
+                            <div className="flex flex-wrap gap-4 text-2xl text-amber-800">
+                                {featured.techStackIcons.map((Icon, i) => (
+                                    <Icon key={i} />
+                                ))}
+                            </div>
+                        </div>
+
+                        {featured.liveLink && (
+                            <a
+                                href={featured.liveLink}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="featured-cta invisible group inline-flex items-center gap-3 self-start font-lexend text-base sm:text-lg font-medium text-amber-950 border-b-2 border-amber-950/30 pb-1 hover:border-amber-950 transition-colors"
+                            >
+                                Visit live
+                                <FaExternalLinkAlt className="text-sm transition-transform group-hover:translate-x-1 group-hover:-translate-y-1" />
+                            </a>
+                        )}
+
+                        <p className="featured-meta invisible font-lexend text-xs tracking-[0.2em] uppercase text-amber-700/50">
+                            001 / featured
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            {/* =============================================================
+                 GALLERY — horizontal pan on desktop, vertical stack on mobile.
+             ============================================================= */}
+            <div ref={panWrapRef} className="gallery-wrap relative md:h-[100dvh] md:overflow-hidden">
+                <div
+                    ref={panTrackRef}
+                    className="gallery-track flex flex-col md:flex-row md:h-full md:items-center gap-8 md:gap-10 px-6 sm:px-10 md:pl-20 md:pr-32 py-16 md:py-0"
+                >
+                    {/* Section marker at the start of the track */}
+                    <div className="gallery-marker shrink-0 md:w-[38vw] lg:w-[30vw] flex flex-col justify-between md:h-[70vh]">
+                        <div>
+                            <p className="font-lexend text-xs tracking-[0.28em] uppercase text-amber-700/70">
+                                Shipped work
+                            </p>
+                            <h2 className="mt-4 font-lexend text-4xl sm:text-5xl lg:text-6xl font-semibold tracking-tighter text-amber-950 leading-[1]">
+                                Selected<br />projects
+                            </h2>
+                        </div>
+                        <p className="mt-8 font-lexend text-sm sm:text-base text-amber-700/70 max-w-[36ch] italic">
+                            Talk's cheap. Show me the code.
+                        </p>
+                    </div>
+
+                    {gallery.map((project, i) => (
+                        <GalleryTile key={project.id} project={project} index={i} />
+                    ))}
+
+                    {/* End marker on desktop */}
+                    <div className="hidden md:flex shrink-0 w-[20vw] items-center">
+                        <p className="font-lexend text-xs tracking-[0.24em] uppercase text-amber-700/50">
+                            End of gallery.<br />Keep scrolling for the archive.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            {/* =============================================================
+                 ARCHIVE — compact index for legacy static-site work.
+             ============================================================= */}
+            <div className="archive-index px-6 sm:px-10 lg:px-20 2xl:px-32 py-24 lg:py-32">
+                <div className="max-w-5xl mx-auto">
+                    <header className="mb-10 lg:mb-14">
+                        <p className="font-lexend text-xs tracking-[0.28em] uppercase text-amber-700/70">
+                            Archive
+                        </p>
+                        <h2 className="mt-3 font-lexend text-3xl sm:text-4xl lg:text-5xl font-semibold tracking-tighter text-amber-950">
+                            Where it started
+                        </h2>
+                    </header>
+
+                    <ul className="divide-y divide-amber-900/10">
+                        {archive.map((project) => (
+                            <ArchiveRow key={project.id} project={project} />
+                        ))}
+                    </ul>
+                </div>
+            </div>
         </section>
-        </PageColumn>
     );
 }
 
 export default Projects;
 
-export const ProjectCard = ({ title, githubLink, liveLink, description, techStackIcons, isAI }) => {
-    return (
-        <article className={`project-card group p-6 sm:p-8 bg-gradient-to-br backdrop-blur-sm shadow-lg hover:shadow-2xl rounded-2xl border transition-all duration-500 hover:scale-[1.02] hover:-translate-y-1 ${isAI
-            ? 'from-purple-50/40 via-blue-50/30 to-amber-50/30 border-purple-300/30 hover:border-purple-400/50'
-            : 'from-amber-50/30 to-amber-100/20 border-amber-200/30'
-            }`}>
-            <header>
-                <h2 className={`text-lg sm:text-2xl md:text-3xl xl:text-4xl font-lexend flex justify-between items-start gap-4 font-bold mb-3 ${isAI ? 'text-purple-900 group-hover:text-purple-700' : 'text-amber-900 group-hover:text-amber-800'
-                    } transition-colors duration-300`}>
-                    <span className='flex-1 flex items-center gap-2'>
-                        {title}
-                        {isAI && <HiSparkles className='text-purple-500 animate-pulse' size={'0.5em'} />}
-                    </span>
-                    <span className='text-base sm:text-xl xl:text-2xl flex gap-3 text-amber-700'>
-                        {githubLink && (
-                            <a
-                                href={githubLink}
-                                target='_blank'
-                                rel='noopener noreferrer'
-                                className='hover:text-amber-900 transition-all duration-300 hover:scale-110 active:scale-95'
-                                aria-label='GitHub Repository'
-                            >
-                                <FaGithub size={'1em'} />
-                            </a>
-                        )}
-                        {liveLink && (
-                            <a
-                                href={liveLink}
-                                target='_blank'
-                                rel='noopener noreferrer'
-                                className={`transition-all duration-300 hover:scale-110 active:scale-95  ${isAI ? 'hover:text-purple-700 text-purple-700' : 'hover:text-amber-900'
-                                    }`}
-                                aria-label='Live Demo'
-                            >
-                                <FaExternalLinkAlt size={'0.9em'} />
-                            </a>
-                        )}
-                        {!githubLink && !liveLink && (
-                            <p className='flex items-center gap-2 text-sm sm:text-base text-amber-600'>
-                                <RiGitRepositoryPrivateFill />
-                                <span className='hidden sm:inline'>Private</span>
-                            </p>
-                        )}
-                    </span>
-                </h2>
-                <p className='text-sm sm:text-base xl:text-lg leading-relaxed text-amber-950/80 font-lexend'>
-                    {description}
-                </p>
-            </header>
-            <main className='mt-6'>
-                <div className='flex items-center gap-3 flex-wrap'>
-                    <p className={`text-xs sm:text-sm xl:text-base font-semibold font-lexend ${isAI ? 'text-purple-800' : 'text-amber-800'
-                        }`}>
-                        Tech Stack
-                    </p>
-                    <div className='flex flex-1 items-center justify-end gap-3 sm:gap-4 flex-wrap'>
-                        {techStackIcons.map((IconComponent, index) => (
-                            <span
-                                key={index}
-                                className={`transition-all duration-300 hover:scale-125 cursor-default ${isAI ? 'text-purple-600 hover:text-purple-800' : 'text-amber-700 hover:text-amber-900'
-                                    }`}
-                                style={{
-                                    animation: `float 3s ease-in-out infinite`,
-                                    animationDelay: `${index * 0.2}s`
-                                }}
-                            >
-                                <IconComponent size="1.5em" className='sm:text-2xl' />
-                            </span>
-                        ))}
-                    </div>
-                </div>
-            </main>
+/* =================================================================
+   Gallery tile — bento widths + the site's `retro` shadow token.
+================================================================= */
+const TILE_WIDTHS = [
+    'md:w-[46vw] lg:w-[38vw]',
+    'md:w-[32vw] lg:w-[26vw]',
+    'md:w-[40vw] lg:w-[32vw]',
+    'md:w-[32vw] lg:w-[26vw]',
+    'md:w-[44vw] lg:w-[36vw]',
+];
 
-            {/* Decorative gradient line */}
-            <div className={`mt-6 h-1 w-0 group-hover:w-full rounded-full transition-all duration-700 ease-out ${isAI
-                ? 'bg-gradient-to-r from-purple-600 via-blue-500 to-purple-400'
-                : 'bg-gradient-to-r from-amber-600 via-amber-500 to-amber-400'
-                }`}></div>
+const GalleryTile = ({ project, index }) => {
+    const { title, description, techStackIcons, githubLink, liveLink } = project;
+    const widthClass = TILE_WIDTHS[index % TILE_WIDTHS.length];
+
+    return (
+        <article
+            className={`gallery-tile shrink-0 w-full ${widthClass} md:h-[68vh] flex flex-col p-8 lg:p-10 rounded-2xl bg-amber-100/40 border border-amber-900/10 shadow-retro transition-transform duration-500 hover:-translate-y-1`}
+        >
+            <header className="flex items-start justify-between gap-6">
+                <p className="font-lexend text-xs tracking-[0.24em] uppercase text-amber-700/60">
+                    {String(index + 2).padStart(3, '0')}
+                </p>
+                <div className="flex items-center gap-3 text-lg text-amber-900">
+                    {githubLink && (
+                        <a
+                            href={githubLink}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            aria-label={`${title} GitHub repository`}
+                            className="hover:text-amber-950 transition-colors"
+                        >
+                            <FaGithub />
+                        </a>
+                    )}
+                    {liveLink && (
+                        <a
+                            href={liveLink}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            aria-label={`${title} live site`}
+                            className="hover:text-amber-950 transition-colors"
+                        >
+                            <FaExternalLinkAlt className="text-base" />
+                        </a>
+                    )}
+                    {!githubLink && !liveLink && (
+                        <span className="flex items-center gap-2 text-xs text-amber-700/70 font-lexend">
+                            <RiGitRepositoryPrivateFill /> Private
+                        </span>
+                    )}
+                </div>
+            </header>
+
+            <h3 className="mt-6 font-lexend text-3xl lg:text-4xl xl:text-5xl font-semibold tracking-tighter text-amber-950 leading-[1.05]">
+                {title}
+            </h3>
+
+            <p className="mt-5 font-lexend text-sm lg:text-base leading-relaxed text-amber-950/75 max-w-[42ch]">
+                {description}
+            </p>
+
+            <div className="mt-auto pt-8 flex items-center gap-3 flex-wrap">
+                {techStackIcons.map((Icon, i) => (
+                    <Icon key={i} className="text-xl lg:text-2xl text-amber-800/85" />
+                ))}
+            </div>
         </article>
     );
 };
+
+/* =================================================================
+   Archive row — one compact line per legacy project.
+================================================================= */
+const ArchiveRow = ({ project }) => {
+    const { title, description, githubLink, liveLink, techStackIcons } = project;
+
+    return (
+        <li className="archive-row py-6 lg:py-8 flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-8">
+            <div className="flex-1 min-w-0">
+                <h3 className="font-lexend text-lg sm:text-xl lg:text-2xl font-semibold tracking-tight text-amber-950">
+                    {title}
+                </h3>
+                <p className="mt-1 font-lexend text-sm lg:text-base text-amber-950/70 max-w-[68ch]">
+                    {description}
+                </p>
+            </div>
+
+            <div className="flex items-center gap-4 text-amber-800/85 shrink-0">
+                {techStackIcons.map((Icon, i) => (
+                    <Icon key={i} className="text-lg" />
+                ))}
+            </div>
+
+            <div className="flex items-center gap-3 shrink-0 text-amber-900 text-base">
+                {githubLink && (
+                    <a
+                        href={githubLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label={`${title} GitHub repository`}
+                        className="hover:text-amber-950 transition-colors"
+                    >
+                        <FaGithub />
+                    </a>
+                )}
+                {liveLink && (
+                    <a
+                        href={liveLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label={`${title} live site`}
+                        className="hover:text-amber-950 transition-colors"
+                    >
+                        <FaExternalLinkAlt className="text-sm" />
+                    </a>
+                )}
+                {!githubLink && !liveLink && (
+                    <span className="flex items-center gap-2 text-xs text-amber-700/70 font-lexend">
+                        <RiGitRepositoryPrivateFill /> Private
+                    </span>
+                )}
+            </div>
+        </li>
+    );
+};
+
+// Kept for backward compat: the v1 module exported ProjectCard. Any external
+// import site keeps working — it now renders via the modern gallery tile.
+export const ProjectCard = ({ title, githubLink, liveLink, description, techStackIcons }) => (
+    <GalleryTile
+        index={0}
+        project={{ title, githubLink, liveLink, description, techStackIcons }}
+    />
+);
